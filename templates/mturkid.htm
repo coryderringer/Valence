@@ -1,0 +1,89 @@
+{% extends "_base.htm" %}
+{% block title %}
+	Welcome!
+{% endblock%}
+
+
+{% block bodycontent %}
+
+<body data-spy="scroll" data-target=".navbar" data-offset="120">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <p class="navbar-text">Welcome!</p> 
+            </div>
+        </div>
+    </nav>
+
+    <!-- Form for verifying ID -->
+    <section id="id">
+        <div class="container well" style="width:800px">
+            <h1>Welcome to the experiment!</h1>
+            
+            <p><b>Purpose: </b>We are conducting a research study to examine how people learn and reason about causal relationships (e.g., smoking can cause lung cancer or rain can cause a car accident).</p>
+
+            <p><b>Procedures: </b>You will make judgments about causal relationships. For example, you might observe a patient taking a medicine and decide whether the medicine is working. Or you might observe the prices of stocks over time and judge which stocks influence other stocks (e.g., perhaps gasoline prices influence car stocks).</p>
+          
+            <b>Requirements:</b>
+            <ol>
+                <li>You must be 18 years or older.</li>
+                <li>You must understand English fluently.</li>
+                <li>You must use one of the following Internet browsers: Google Chrome, Safari, Firefox. This study may not work on Internet Explorer.</li>
+            </ol>
+
+            <p><b>Expected Duration</b>: Less than 1 hour</p>
+            
+            <p><b>Course Credit:</b> You will receive 1 hour of credit. There are other ways you can satisfy your course requirements and you are not obligated to participate in this study.</p>
+
+            <p><b>Risks and Benefits: </b>There are no foreseeable risks associated with this project, nor are there any direct benefits to you.</p>
+
+            <p><b>Confidentiality: </b>All records pertaining to your involvement in this study will be kept private on password-protected computer systems. Your identity will not be revealed in any description or publication of this research. It is possible that authorized representatives from the University of Pittsburgh Research Conduct and Compliance Office may review your data for the purpose of monitoring the conduct of this study.</p>
+            
+            <p><b>Voluntary Participation: </b>You are free to decline to participate and to end participation at any time for any reason.</p>
+
+            <p><b>Contact Information: </b>If you have any questions about this study, please email the study coordinator, Cory Derringer (cjd78@pitt.edu). The principal investigator, Benjamin Rottman, Ph.D. can be contacted at 412-624-7493.</p>
+
+            <p>If you have any questions about your rights as a participant, please contact the Human Subjects Protection Advocate at the University of Pittsburgh IRB Office, 1-866-212-2668.</p>
+            <br>
+
+            <p>To begin, enter your 7-digit student ID in the field below.</p>
+
+            <form method="post" action="/mturkid" class="form-inline">
+                <div class="form-group">
+                    <input type="text" style="width:300px" class="form-control" name="ID" placeholder="Type your 7-digit student ID here" required="true">
+                    <input type="hidden" id="browser" name="browser" value="">
+                    <input type="submit" value="Submit" class="btn btn-primary"/><br><br>
+                </div>
+            </form>
+        </div>
+    </section>
+
+
+<script>
+$(document).ready(function(){
+    function checkBrowser(){
+        var ua= navigator.userAgent, tem,
+        M= ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+        if(/trident/i.test(M[1])){
+            tem=  /\brv[ :]+(\d+)/g.exec(ua) || [];
+            return 'IE '+(tem[1] || '');
+        }
+        if(M[1]=== 'Chrome'){
+            tem= ua.match(/\bOPR\/(\d+)/)
+            if(tem!= null) return 'Opera '+tem[1];
+        }
+        M= M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+        if((tem= ua.match(/version\/(\d+)/i))!= null) M.splice(1, 1, tem[1]);
+        return M.join(' ');
+    }
+
+    var browser = checkBrowser();
+    document.getElementById('browser').value = browser;
+
+})
+</script>
+
+</body>
+{% endblock %}

@@ -1,0 +1,692 @@
+{% extends "_base.htm" %}
+
+{% block title %}
+    Medication Task
+{% endblock%}
+
+{% block bodycontent %}
+
+<!-- happy: &#x1F600 -->
+<!-- sad: &#x1F922 -->
+
+<body data-spy="scroll" data-target=".navbar" data-offset="120">
+    <!-- Navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <p class="navbar-text">Medication Task</p> 
+            </div>
+        </div>
+    </nav>
+    
+    <div id="containerDiv" style="width:800px; display: none" class="container well">
+
+        <div class="section">
+            <div class="row" id="taskDisplay">
+                <div class="col-xs-8" class="text-center">
+                    <div id="effectDiv" class="text-center">
+                        <h2>Patient Number <span name="patientNumber">1</span></h2>
+                        <!-- find a place for the patient impact info here -->
+                        <div>
+                            <p>The patient's outcome was <span name="outcomeSpan">BAD</span>.</p>
+                        </div>
+
+                        <div class="text-center" style="height:100px; border-bottom: 1px solid grey"> <!-- this is the div that we want split up vertically -->
+                            <div class="col-xs-4"></div>
+                            <div class="col-xs-4 text-center">
+                                <div id="effectiveEmoji">
+                                    <img src="/static/images/good.png" style="height:70px"/>
+                                </div>
+                
+                                <div id="ineffectiveEmoji">
+                                    <img src="/static/images/bad.png" style="height:70px"/>
+                                </div>
+                            </div>
+                            
+                            <div id="outcomePercentageText" class="col-xs-4 text-left">
+                                <p style="font-size: 14pt"><span id="outcomePercentageSpan">-3 cents!</span></p>
+                            </div>
+                            
+                        </div>
+                        
+               
+                        <p id="effectPrompt">Was the patient's outcome GOOD or BAD?</p>
+                           
+
+                        <div id="effectClick" style="height:50px" class="row">    
+                            
+                            <div id="leftFace" class="col-xs-5">
+                                <div id="effectiveClick" class="text-center">
+                                    <img src="/static/images/good.png" style="height:50px"/>
+                                </div>
+                            </div>
+                            <div id="leftBorderDiv" class="col-xs-1" style="border-right: 1px solid black; height:50px"></div>
+                            <div id="rightBorderDiv" style="height:50px" class="col-xs-1"></div>
+                            <div id="rightFace" class="col-xs-5">
+                                <div id="ineffectiveClick" class="text-center">
+                                    <img src="/static/images/bad.png" style="height:50px"/>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <br>
+                    <div id="causeDiv" class = "text-center">
+                        <p id="causePrompt">Guess whether the patient received <span name="drugA_Name">Drug A</span> or <span name="drugB_Name">Drug B</span>?</p> 
+                        <div class = "row" id="pillDiv" style="height:75px"> 
+                            <div id="drugA" class="col-xs-5 text-center">
+                                <p><span name="drugA_Name">Drug A</span></p>
+                                <img id="leftDrug" src="/static/images/LightBlue.png" style="width:100px"/>
+                            </div>
+                            <div class = "col-xs-2 text-center">
+                                <div style="height:10px"></div>
+                                <div id="feedbackDiv" class="text-center" style="font-size: 10pt; padding:0px; height:75px"></div>
+                            </div>
+                            <div id="drugB" class="col-xs-5 text-center">
+                                <p><span name="drugB_Name">Drug B</span></p>
+                                <img id="rightDrug" src="/static/images/DarkBlue.png" style="width:100px"/>
+                            </div>
+                        </div>
+                        <div style="height:20px"></div>                
+                        <div id="feedbackButtonDiv" style="visibility: hidden">
+                            <button id="feedbackButton">Next</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="scoreDiv" class="col-xs-4 text-center">
+
+                    <p><b>Current bonuses:</b></p>
+                    <div id="treatmentBonusDiv" class="scoreDisplay">
+                        Treatment Bonus: <span id="treatmentBonusSpan">1.02</span>
+                    </div>
+                    <div style="height:5px"></div>
+                    <div id="accuracyBonusDiv" class="scoreDisplay">
+                        Accuracy Bonus: <span id="accuracyBonusSpan">0.00</span>
+                    </div>
+                    <div style="height:5px"></div>
+                    <div id="totalBonusDiv" class="scoreDisplay">
+                        Total Bonus: <span id="totalBonusSpan">1.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ajax form to send tbt data to datastore -->
+        <form id="dataform" method="post" action="/task">
+            <input id="timeInput" name="timeInput" type="hidden">
+            <input id="attentionFailsInput" name="attentionFailsInput" type="hidden">
+            <input id="trialInput" name="trialInput" type="hidden">
+            <input id="guessInput" name="guessInput" type="hidden">
+            <input id="correctInput" name="correctInput" type="hidden">
+            <input id="profitImpactInput" name="profitImpactInput" type="hidden">
+            <input id="runningBonusInput" name="runningBonusInput" type="hidden">
+
+                <!-- data[13] -->
+            <input id="Submit" onclick="mySubmit()" value="Submit" type="hidden">
+        </form>
+
+        <!-- form to advance to scenario -->
+        <form id="submitForm" method="get" action="/firstJudgment" class="hidden">     
+            <input type="submit" value="" class="hidden"/>
+        </form>
+            
+        
+
+    </div>
+</body>
+        
+        
+      
+
+
+
+<script>
+
+$(document).ready(function(){
+
+
+
+    var main = {
+        // main should be the overall page function, data, etc.
+
+        init: function(){
+            // variables
+            main.accuracyBonusAmt = 3
+            main.drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
+            main.drugs = {{drugs}}
+
+            main.drugA_Name = String(main.drugNames[main.drugs[0]])
+            main.drugB_Name = String(main.drugNames[main.drugs[1]])
+
+            // drug = ['blue', 'green', 'orange', 'purple']
+            // drugColors = [0,1,2,3]
+            main.colors = {{drugColors}} // this is the order from the backend, something like [3,1]
+
+            main.drugColors = ['/static/images/LightBlue.png', 
+                '/static/images/DarkBlue.png',
+                '/static/images/Orange.png',
+                '/static/images/Purple.png']
+            
+            main.leftColor = String(main.drugColors[main.colors[0]])
+            main.rightColor = String(main.drugColors[main.colors[1]])
+            main.paradigmData = {{paradigmData}}
+
+            main.position = {{position}} 
+            // main.position is complicated...In both of the data files, 0 is the most common drug ID (Drug A). If main.position is zero, 1 becomes the most common drug ID in the data. Either way, we think of "Drug A" as the common drug, in keeping with "Group A" in the literature. What I've done here (might be a mistake, because it's a little confusing) is to always call the drug on the left side of the screen "Drug A". So Drug A here (and in the final judgment page) is just the drug that was on the left, NOT the most common drug. If main.position = 0, the drug on the left is more common. If main.position = 1, the drug on the right is more common. 
+
+            // main.position = 1 // testing
+            main.groupData = main.dataSetup(main.position)
+            
+            main.scenario = {{scenario}}
+            main.trialNumber = 0 
+            // main.trialNumber = 47 // testing
+            
+            main.lengthOfData = 48
+            main.assets = 100+main.paradigmData[main.trialNumber]
+            main.accuracyBonus = 0
+            main.guesses = new Array()
+            main.attentionFails = 0 // resets every trial
+                
+
+            main.faces = {{faces}}
+            // main.faces = 1 // testing
+
+            // weird out of place thing that is really terrible in practice... #don'tTryThisAtHome
+            if(main.faces == 1){ // switch left and right faces
+                $('#rightFace').html('<div id="effectiveClick" class="text-center">'+
+                    '<img src="/static/images/good.png" style="height:50px"/>'+
+                    '</div>')
+                $('#leftFace').html('<div id="ineffectiveClick" class="text-center">'+
+                    '<img src="/static/images/bad.png" style="height:50px"/>'+
+                    '</div>')
+                $('#effectPrompt').text('Was this patient\'s outcome BAD or GOOD?')
+            }
+
+
+
+            // cache DOM
+            main.cacheDOM()
+            main.cacheDOM()
+
+            // bind events (effect only)
+            main.bindEvents(0)
+
+            // render page
+            main.render('reset')
+            main.getTrialStartTime()
+        },
+
+        dataSetup: function(position){
+            // This function reverses the left/right drug positions on the screen if necessary.
+            // It reverses the positions by simply switching all of the group IDs.
+            // So on a given trial, if a patient would usually get Drug A (0), they get Drug B (1)
+            
+            if(position == 0){
+                return({{groupData}})
+            }else{
+                var dummy = {{groupData}}
+                var groupData = new Array()
+                // reverse code group data
+                for(var i = 0; i < dummy.length; i++){
+                    if(dummy[i] == 1){
+                        groupData.push(0)
+                    }else{
+                        groupData.push(1)
+                    }
+                }
+                return(groupData)
+            }
+        },
+
+        cacheDOM: function(){
+            // this function saves the DOM searches, so we only have to search the DOM once.
+
+            main.$co = $('#containerDiv') // container div
+
+            main.$patientImpact = main.$co.find('#patientImpact')
+            main.$treatmentBonusSpan = main.$co.find('#treatmentBonusSpan')
+            main.$accuracyBonusSpan = main.$co.find('#accuracyBonusSpan')
+            main.$totalBonusSpan = main.$co.find('#totalBonusSpan')
+
+            // main.$choiceRow = main.$co.find('#choiceRow')
+            main.$outcomeSpans = main.$co.find('span[name=outcomeSpan]')
+            main.$outcomePercentageSpan = main.$co.find('#outcomePercentageSpan')
+
+            main.$drugA_Spans = main.$co.find('span[name=drugA_Name]')
+            main.$drugB_Spans = main.$co.find('span[name=drugB_Name]')
+
+            main.$leftDrug = main.$co.find('#leftDrug')
+            main.$rightDrug = main.$co.find('#rightDrug')
+
+            main.$feedbackDiv = main.$co.find('#feedbackDiv')
+            main.$feedbackButton = main.$co.find('#feedbackButton')
+            main.$feedbackButtonDiv = main.$co.find('#feedbackButtonDiv')
+
+            main.$buttonRow = main.$co.find('#buttonRow')
+            main.$displayDiv = main.$co.find('#displayDiv')
+            main.$effectImage = main.$co.find('#effectImage')
+            
+            main.$effectiveEmoji = main.$co.find('#effectiveEmoji')
+            main.$ineffectiveEmoji = main.$co.find('#ineffectiveEmoji')
+
+            // spans
+            main.$patientNumber = main.$co.find('span[name=patientNumber]')
+            
+            // form
+            main.$timeInput = main.$co.find('#timeInput')
+            main.$attentionFailsInput = main.$co.find('#attentionFailsInput')
+            main.$trialInput = main.$co.find('#trialInput')
+            main.$guessInput = main.$co.find('#guessInput')
+            main.$correctInput = main.$co.find('#correctInput')
+            main.$profitImpactInput = main.$co.find('#profitImpactInput')
+            main.$dataform = main.$co.find('#dataform')
+
+            main.$causeDiv = main.$co.find('#causeDiv')
+
+            main.$feedbackDrugName = main.$co.find('#feedbackDrugName')
+            main.$drugA = main.$co.find('#drugA')
+            main.$drugB = main.$co.find('#drugB')
+            main.$causePrompt = main.$co.find('#causePrompt')
+
+
+            main.effectDiv = main.$co.find('#effectDiv')
+            main.$patientImpact = main.$co.find('#patientImpact')
+            main.$outcomeSpans = main.$co.find('span[name=outcomeSpan]')
+            main.$outcomePercentageSpan = main.$co.find('#outcomePercentageSpan')
+            main.$feedbackButton = main.$co.find('#feedbackButton')
+            main.$effectClick = main.$co.find('#effectClick') // this is the whole bottom left div
+            main.$effectPrompt = main.$co.find('#effectPrompt')
+            
+
+            // "buttons"
+            main.$effectiveClick = main.$co.find('#effectiveClick')
+            main.$ineffectiveClick = main.$co.find('#ineffectiveClick')
+
+
+        },
+
+        render: function(stage){
+            // This function hides and shows things as appropriate.
+            // This should be the only function that interacts with the visual elements of the page.
+            // The 'stage' argument refers to progress within a trial. 
+
+            main.$drugA_Spans.text(String(main.drugA_Name))
+            main.$drugB_Spans.text(String(main.drugB_Name))
+
+            main.$leftDrug.attr('src', main.leftColor)
+            main.$rightDrug.attr('src', main.rightColor)
+
+            if(stage == 'reset'){ // new trial
+                // console.log('render reset')
+                // Patient Number
+                
+                // remove borders from prev trial
+                main.$patientNumber.text(main.trialNumber+1)
+                main.removeBorder(main.$drugA)
+                main.removeBorder(main.$drugB)
+                main.removeBorder(main.$effectiveClick)
+                main.removeBorder(main.$ineffectiveClick)
+
+                // effect div
+                main.$effectPrompt.css('opacity', '1.0')
+                main.$effectiveClick.css('opacity', '1.0')
+                main.$ineffectiveClick.css('opacity', '1.0')
+
+                // cause div
+                main.$causeDiv.css('opacity', '0.2')
+                main.$drugA.css('opacity', '1.0')
+                main.$drugB.css('opacity', '1.0')
+                main.$causePrompt.css('opacity', '1.0')
+                main.$feedbackDiv.css('visibility', 'hidden')
+                main.$feedbackButtonDiv.css('visibility', 'hidden')
+
+
+                if(main.paradigmData[main.trialNumber] > 0){
+                   
+                    main.$patientImpact.text('+'+main.paradigmData[main.trialNumber]+ ' cents!')
+                    main.$ineffectiveEmoji.hide()
+                    main.$effectiveEmoji.show()
+
+                }else{
+        
+                    main.$patientImpact.text(main.paradigmData[main.trialNumber]+' cents!')    
+                    main.$effectiveEmoji.hide()
+                    main.$ineffectiveEmoji.show()
+                    
+
+                }
+                // outcome description
+                if(main.paradigmData[main.trialNumber] > 0){
+
+                    main.$outcomeSpans.text(text.positiveOutcome)
+                    main.$outcomePercentageSpan.text('+'+main.paradigmData[main.trialNumber]+ ' cents!')
+                }else{
+
+                    main.$outcomeSpans.text(text.negativeOutcome)
+                    main.$outcomePercentageSpan.text(main.paradigmData[main.trialNumber]+ ' cents!')
+                }
+
+                main.$co.show() 
+
+            }else if(stage == 'guess'){
+                
+                // console.log('render guess')
+
+                if(main.paradigmData[main.trialNumber] > 0){ // if effective
+                    main.$ineffectiveClick.css('opacity', '0.2')
+                    main.insertBorder(main.$effectiveClick)                
+                }else{
+                    main.$effectiveClick.css('opacity', '0.2')
+                    main.insertBorder(main.$ineffectiveClick)
+                }
+                main.$effectPrompt.css('opacity', '0.2')
+                
+                main.$causeDiv.css('opacity', '1.0')
+
+
+
+
+            }else if(stage == 'feedback'){
+                // console.log('render feedback')
+                main.$causePrompt.css('opacity', '0.25')
+
+                // opacity to .25 for the incorrect answer
+                if(main.groupData[main.trialNumber] == 0){ // 0 is A
+                    main.$feedbackDrugName.text(main.drugA_Name)  
+                    main.$drugB.css('opacity', '0.25')
+                    
+                    // render borders
+                    main.insertBorder(main.$drugA)
+                    
+
+                    // feedback text
+                    if(main.guesses[main.guesses.length-1] == 'A'){ // correctly guess A
+                        main.$feedbackDiv.html('Correct!<br>+3 cents!')  
+                        
+                    }else{ // incorrectly guess B
+                        main.$feedbackDiv.html('Incorrect!')    
+                    }  
+
+                }else{
+                    main.$feedbackDrugName.text(main.drugB_Name)  
+                    main.$drugA.css('opacity', '0.25')
+                    
+                    // render borders
+                    main.insertBorder(main.$drugB)
+
+                    // feedback text
+                    if(main.guesses[main.guesses.length-1] == 'B'){
+                        main.$feedbackDiv.html('Correct!<br>+3 cents!')  
+                    }else{
+                        main.$feedbackDiv.html('Incorrect!')     
+                    }
+                }
+                main.$feedbackDiv.css('visibility', 'visible')
+
+                main.$treatmentBonusSpan.text(main.creditRender(main.assets))
+                main.$accuracyBonusSpan.text(main.creditRender(main.accuracyBonus))    
+                main.$totalBonusSpan.text(main.creditRender(main.accuracyBonus+main.assets))
+                main.$feedbackButtonDiv.css('visibility', 'visible')
+            }
+
+
+            main.$treatmentBonusSpan.text(main.creditRender(main.assets))
+            main.$accuracyBonusSpan.text(main.creditRender(main.accuracyBonus))    
+            main.$totalBonusSpan.text(main.creditRender(main.accuracyBonus+main.assets))
+
+            
+            
+            
+        },
+
+        creditRender: function(credits){
+            // this function takes a number in cents and converts it to dollars
+
+            // main.creditRender(6) -> 0.06
+            // main.creditRender(100) -> 1.00 
+
+            // display credits div
+            if(credits % 100 == 0){
+                var displayCredits = String(credits/100) + '.00';
+            }else if(credits %10 == 0){
+                displayCredits = String(credits/100) +'0'; 
+            }else{
+                displayCredits = credits/100;
+            }
+            return(displayCredits);
+            // $creditSpan.html(displayCredits);
+        },
+
+        bindEvents: function(stage){
+            // this function specifies which objects are "listening" for events to happen at which times.
+
+            if(stage == 0){
+                main.$drugA.unbind()
+                main.$drugB.unbind()
+                main.$effectiveClick.unbind().on('click', main.effectiveClick)
+                main.$ineffectiveClick.unbind().on('click', main.ineffectiveClick)
+            }else{
+                main.$effectiveClick.unbind()
+                main.$ineffectiveClick.unbind()
+                main.$drugA.unbind().on('click', main.drugA_Function)
+                main.$drugB.unbind().on('click', main.drugB_Function)    
+            }
+            main.$feedbackButton.unbind().on('click', main.newTrial)
+            // $backButton.unbind().on('click', main.decrementInstructions)
+            // $nextButton.unbind().on('click', main.incrementInstructions)
+            // main.$drugA.unbind().on('click', main.drugA_Function)
+            // main.$drugB.unbind().on('click', main.drugB_Function)
+
+            // if(main.renderTracker == 4){
+            //     $nextButton.unbind().on('click', main.mySubmit)
+            // }else{
+            //     $nextButton.unbind().on('click', main.incrementInstructions)
+            // }    
+        },
+
+        // activateCauseDiv: function(){
+        //     main.unbindEvents()
+        //     main.render('guess')
+        //     main.bindEvents()
+        // }
+
+        unbindEvents: function(){
+            // this function unbinds all events except for the feedback button, so that during the feedback stage nothing happens if they click the faces or pills.
+
+            main.$drugA.unbind()
+            main.$drugB.unbind()
+            main.$effectiveClick.unbind()
+            main.$ineffectiveClick.unbind()
+        },
+
+        effectiveClick: function(){
+            // this function fires when they click the happy face
+            if(main.paradigmData[main.trialNumber] > 0){
+                main.bindEvents(1)
+                main.render('guess')
+            }else{
+                main.attentionFails += 1
+                alert('Please click to indicate that the patient\'s outcome was BAD!')
+            }    
+        },
+
+        ineffectiveClick: function(){
+            // this function fires when they click the sad face
+            if(main.paradigmData[main.trialNumber] < 0){
+                main.bindEvents(1)
+                main.render('guess')
+            }else{
+                main.attentionFails += 1
+                alert('Please click to indicate that the patient\'s outcome was GOOD!')
+            }
+        },
+
+        newTrial: function(){
+            // this function fires when they click the feedback button ('next' button)
+            // if the scenario is over, it goes to the next page, otherwise it resets everything.
+
+            if(main.trialNumber >= main.lengthOfData-1){
+                main.mySubmit()
+            }else{
+                // new trial:
+                main.trialNumber += 1
+                main.assets += main.paradigmData[main.trialNumber]
+                main.render('reset')
+                main.getTrialStartTime()
+                main.bindEvents(0)
+                main.attentionFails = 0
+            }
+        },
+
+        getTrialStartTime: function(){
+            // does what it says on the box
+
+            var trialDate = new Date()
+            main.trialStartTime = trialDate.getTime()
+        },
+
+        sendAjax: function(){
+            // this function sends data to the server without re-loading the page
+            // it fires as part of main.feedback() after they click one of the pills
+
+            // trial time
+            trialDate = new Date()
+            trialTime = trialDate.getTime()
+            time = trialTime-main.trialStartTime
+            main.$timeInput.val(time)
+
+            // number of attention fails on this trial
+            main.$attentionFailsInput.val(main.attentionFails)
+
+            // trial number
+            main.$trialInput.val(main.trialNumber+1)
+            
+            // guess
+            main.$guessInput.val(main.guesses[main.guesses.length-1])
+            
+            // correct 
+            if(main.groupData[main.trialNumber] == 0){
+                main.$correctInput.val('A') // 0 is A
+            }else{
+                main.$correctInput.val('B')
+            }
+
+            // bonus total
+            var bonus = main.accuracyBonus + main.assets
+            $('#runningBonusInput').val(bonus)
+
+            // profit impact
+            main.$profitImpactInput.val(main.paradigmData[main.trialNumber])
+
+            console.log('Sending to Ajax:')
+            console.log('total bonus: '+bonus)
+            console.log('Trial Time: '+String(main.$timeInput.val()))
+            console.log('Attention Fails: '+String(main.$attentionFailsInput.val()))
+            console.log('Trial Number: '+String(main.$trialInput.val()))
+            console.log('Guess: '+String(main.$guessInput.val()))
+            console.log('Correct Answer: '+String(main.$correctInput.val()))
+            console.log('Profit Impact: '+String(main.$profitImpactInput.val()))
+            // spacing
+            console.log('')
+            console.log('')
+            console.log('')
+
+            // send to back end with ajax
+            $.ajax({
+             url:"/ajax",
+             data: main.$dataform.serialize(),
+             dataType: 'json',
+             type: "POST",
+             cache: false,
+             // error: function() {alert("Error")},
+             // success: function() {alert("Success")}
+            });
+        },
+
+        drugA_Function: function(){
+            // this function is bound to the pill on the left
+            
+            main.guesses.push('A')
+            main.feedback()    
+        },
+
+        drugB_Function: function(){
+            // this function is bound to the pill on the right
+
+            main.guesses.push('B')
+            main.feedback()      
+        },
+
+        feedback: function(){
+            // this function runs after they make a pill guess
+            // it does a few things:
+                // unbinds the clicking events except for the 'next' button (feedbackButton)
+                // scores their answer
+                // renders feedback (and the button to continue)
+                // sends their guesses to the server
+
+            // temporarily suspend event binding for Drug A and B
+            main.unbindEvents()
+            
+            
+            // score answer
+            if(main.guesses[main.guesses.length-1] == 'A' & main.groupData[main.trialNumber] == 0){
+                // correct
+                main.accuracyBonus += main.accuracyBonusAmt
+            }else if(main.guesses[main.guesses.length-1] == 'B' & main.groupData[main.trialNumber] == 1){
+                // also correct
+                main.accuracyBonus += main.accuracyBonusAmt
+            }
+
+            main.render('feedback')
+            main.sendAjax()
+            
+            
+        },
+
+        mySubmit: function(){
+
+            $('#submitForm').submit()        
+        },
+
+        startTimer: function(){
+            start = new Date();
+            return start.getTime(); 
+        },
+
+        insertBorder: function(object){
+            object.css('border', '5px solid grey')
+            object.css('-moz-border-radius', '20px')
+            object.css('border-radius', '15px')
+        },
+
+        removeBorder: function(object){
+            // doesn't really remove the border, because that creates weird visual jumps.
+            // instead makes the border the same color as a bootstrap well
+
+            object.css('border', '5px solid #F5F5F5')
+        }
+            
+    }
+
+
+
+
+    var text = {
+        positiveOutcome: 'GOOD',
+        negativeOutcome: 'BAD'
+
+    }
+
+
+
+
+
+    main.init()
+
+})
+
+
+// })
+ </script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "_base.htm" %}
+
+{% block title %}
+	Scenarios
+{% endblock%}
+
+{% block bodycontent %}
+
+<body data-spy="scroll" data-target=".navbar" data-offset="120">
+    <!-- Navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <p class="navbar-text">Medication Task</p> 
+            </div>
+        </div>
+    </nav>
+    
+    <div id="containerDiv" style="width:700px; display: none" class="container well">
+    	<h2>Scenarios:</h2>
+
+    	<p>You will complete two scenarios, each about a different disease. The diseases are unrelated. In the first scenario, you will view data about the disease <span id="disease"></span>, which is <b><span id="freq1">often</span> treated with <span id="drug1"></span>, but is <span id="freq2">sometimes</span> treated with <span id="drug2"></span></b>. Most patients have <span id="outcome"></span> treatment outcomes for this disease. Click below to begin the experiment.</p>
+
+    	<button class="btn btn-info" onclick="submit()">
+    		Begin Experiment
+    	</button>
+	
+    </div>
+    <form id="submitForm" method="get" action="/scenario" class="hidden">
+    	<input type="submit" value="" class="hidden"/>
+	</form>
+
+
+	
+	
+	
+</div>
+
+<script>
+
+function submit(){
+	$('#submitForm').submit()   
+}
+
+$(document).ready(function(){
+
+	var drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
+	var drugs = {{drugs}}
+
+    var position = {{position}}
+    console.log(position)
+    
+
+    if(position == 1){ // switch rarity
+        $('#freq1').text('sometimes')
+        $('#freq2').text('more often')
+    }
+
+	$('#disease').text('{{disease}}')
+	$('#drug1').text(String(drugNames[drugs[0]]))
+	$('#drug2').text(String(drugNames[drugs[1]]))
+    
+    if('{{condition}}' == 'negative'){
+        $('#outcome').text('GOOD')
+    }else{
+        $('#outcome').text('BAD')
+    }
+
+    $('#containerDiv').show()
+
+})
+
+</script>
+
+
+{% endblock %}

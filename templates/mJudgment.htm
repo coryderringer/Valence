@@ -1,0 +1,681 @@
+{% extends "_base.htm" %}
+
+{% block title %}
+    Medication Task
+{% endblock%}
+
+{% block bodycontent %}
+
+
+
+
+<body data-spy="scroll" data-target=".navbar" data-offset="120">
+    <!-- Navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <p class="navbar-text">Medication Task</p> 
+            </div>
+        </div>
+    </nav>
+    
+    <div id="containerDiv" style="width:800px; display: none" class="container well">
+
+        <div class="section">
+            <div id="taskDisplay">
+                <!-- <div class = "row" id="pillDiv" style="height:75px"> 
+                    <div id="drugA" class="col-xs-5 text-center">
+                        <p><span name="drugA_Name">Drug A</span></p>
+                        <img id="leftDrug" src="/static/images/LightBlue.png" style="width:100px"/>
+                    </div>
+                    <div class = "col-xs-2 text-center">
+                        <div style="height:10px"></div>
+                        <div id="feedbackDiv" class="text-center" style="font-size: 10pt; padding:0px; height:75px"></div>
+                    </div>
+                    <div id="drugB" class="col-xs-5 text-center">
+                        <p><span name="drugB_Name">Drug B</span></p>
+                        <img id="rightDrug" src="/static/images/DarkBlue.png" style="width:100px"/>
+                    </div> -->
+                </div>
+
+                <div class="text-center">
+                    <div id="judgment1Div" class="text-center">
+                        <h2>How many patients had BAD outcomes?</h2>
+                        <!-- find a place for the patient impact info here -->
+                        <div class="row">
+                            <div id="drugA_Judgment" class="col-xs-6 text-center">
+                                <div id="drugA">
+                                    <p><span name="drugA_Name">Drug A</span></p>
+                                    <img name="drugA_Image" src="/static/images/DarkBlue.png" style="width:100px"/>
+                                </div>
+                                <br>
+                                <p>Of the patients you just saw, <span id="drugA_Total"><b>put a number here</b></span> received <b><span name="drugA_Name">Drug A</span></b>. How many of them had <b>BAD outcomes?</b></p><br>
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <input type="text" id="drugA_textInput" style="width:50px"/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <button id="drugA_Button" class="btn btn-default">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div id="drugB_Judgment" class="col-xs-6 text-center">
+                                
+                                <div id="drugB">
+                                    <p><span name="drugB_Name">Drug A</span></p>
+                                    <img name="drugB_Image" src="/static/images/DarkBlue.png" style="width:100px"/>
+                                </div>
+                                <br>
+                                
+                                <p>Of the patients you just saw, <span id="drugB_Total"><b>put a number here</b></span> received <b><span name="drugB_Name">Drug B</span></b>. How many of them had <b>BAD outcomes?</b></p><br>
+
+                                <div class="row">
+                                    <div class="col-xs-6">
+                                        <input type="text" id="drugB_textInput" style="width:50px"/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <button id="drugB_Button" class="btn btn-default">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div id="judgment2Div" class="text-center">
+                        <h2>How many patients took each drug?</h2>
+                        <!-- find a place for the patient impact info here -->
+                        <div class="row">
+                            <div id="left_GB_Judgment" class="col-xs-6 text-center"> 
+                                <!-- GB is "good/bad" -->
+                                <div>
+                                    <img id="left_GB_Image" src="/static/images/good.png" style="height:100px"/>
+                                </div>
+                                <br>
+                                <p>Of the patients you just saw, <span id="left_GB_Total"><b>put a number here</b></span> had a <b><span name="left_GB_Label"></span> outcome</b>. How many of them took each drug?</p><br>
+
+                                <div class="row" style = "height:80px">
+                                    <!-- row of images -->
+                                    <div class="col-xs-6">
+                                        <p><span name="drugA_Name">Drug A</span></p>
+                                        <img name="drugA_Image" src="/static/images/DarkBlue.png" style="height:40px"/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <p><span name="drugB_Name">Drug B</span></p>
+                                        <img name="drugB_Image" src="/static/images/DarkBlue.png" style="height:40px"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <!-- row of inputs -->
+                                    <div class="col-xs-6">
+                                        <input type="text" id="left_GB_drugA_Input" style="width:50px"/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <input type="text" id="left_GB_drugB_Input" style="width:50px"/>
+                                    </div>
+                                </div>
+                                <button id="left_GB_Button" class="btn btn-default">
+                                    Next
+                                </button>
+
+                            </div>
+
+                            <div id="right_GB_Judgment" class="col-xs-6 text-center">
+                                
+                                <div>
+                                    <img id="right_GB_Image" src="/static/images/bad.png" style="height:100px"/>
+                                </div>
+                                <br>
+                                <p>Of the patients you just saw, <span id="right_GB_Total"><b>put a number here</b></span> had a <b><span name="right_GB_Label"></span> outcome</b>. How many of them took each drug?</p><br>
+
+                                <div class="row" style = "height:80px">
+                                    <!-- row of images -->
+                                    <div class="col-xs-6">
+                                        <p><span name="drugA_Name">Drug A</span></p>
+                                        <img name="drugA_Image" src="/static/images/DarkBlue.png" style="height:40px"/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <p><span name="drugB_Name">Drug B</span></p>
+                                        <img name="drugB_Image" src="/static/images/DarkBlue.png" style="height:40px"/>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <!-- row of inputs -->
+                                    <div class="col-xs-6">
+                                        <input type="text" id="right_GB_drugA_Input" style="width:50px"/>
+                                    </div>
+                                    <div class="col-xs-6">
+                                        <input type="text" id="right_GB_drugB_Input" style="width:50px"/>
+                                    </div>
+                                </div>
+
+                                <button id="right_GB_Button" class="btn btn-default">
+                                    Next
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        
+
+            <!-- ajax form to send tbt data to datastore -->
+            <form id="dataform" method="post" action="/AjaxMemoryTest" style="display:none">
+                <input id="drugInput" name="drugInput" type="hidden"> <!-- common or rare -->
+                <input id="drugNameInput" name="drugNameInput">
+                <input id="drugColorInput" name="drugColorInput">
+                <input id="judgmentInput" name="judgmentInput"> 
+                <input id="judgmentNumberInput" name="judgmentNumberInput"> <!-- 1st or second -->
+                    <!-- data[13] -->
+                <input id="Submit" onclick="mySubmit()" value="Submit">
+            </form>
+
+            <!-- form to advance to scenario -->
+            <form id="submitFormOrderZero" method="get" action="/secondJudgment" class="hidden">
+                <input type="submit" value="" class="hidden"/>
+            </form>
+
+            <form id="submitFormOrderOne" method="post" action="/secondJudgment" class="hidden">
+                <input type="submit" value="" class="hidden"/>
+            </form>
+            
+        </div>
+
+    </div>
+</body>
+        
+        
+      
+
+
+
+<script>
+
+// $(document).ready(function(){
+
+
+// just changed id pictures to name pictures, need to make corresponding changes
+
+// don't forget to randomize placement!
+    // left or right
+    // drug name with color
+
+var main = {
+    // main should be the overall page function, data, etc.
+
+    init: function(){
+        this.drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
+        this.drugs = {{drugs}}
+
+        this.condition = '{{condition}}' // if condition is pos, pos is rare 
+        // 32 neg and 16 pos; if neg this is reversed
+
+        if(this.condition == 'positive'){
+            main.goodOutcomes = 16
+            main.badOutcomes = 32
+        }else{
+            main.goodOutcomes = 32
+            main.badOutcomes = 16
+        }
+
+        this.drugA_Name = String(this.drugNames[this.drugs[0]])
+        this.drugB_Name = String(this.drugNames[this.drugs[1]])
+        
+        main.colors = {{drugColors}} // this is the order from the backend, something like [3,1]
+
+        main.drugColors = ['/static/images/LightBlue.png', 
+            '/static/images/DarkBlue.png',
+            '/static/images/Orange.png',
+            '/static/images/Purple.png']
+        
+        main.drugA_color = String(main.drugColors[main.colors[0]])
+        main.drugB_color = String(main.drugColors[main.colors[1]])
+
+        main.position = {{position}} 
+        // main.position = 1 // testing
+        // if main.position = 0, drug A was the most common drug
+        // if main.position = 1, drug B was the most common drug
+
+        // main.position is complicated...In both of the data files, 0 is the most common drug ID (Drug A). If main.position is zero, 1 becomes the most common drug ID in the data. Either way, we think of "Drug A" as the common drug, in keeping with "Group A" in the literature. What I've done here (might be a mistake, because it's a little confusing) is to always call the drug on the left side of the screen "Drug A". So Drug A here (and in the TBT scenario page) is just the drug that was on the left, NOT the most common drug. If main.position = 0, the drug on the left is more common. If main.position = 1, the drug on the right is more common. 
+
+        // randomize order of asking
+        if(Math.round(Math.random()) == 0){
+            main.askOrder = 0 // this asks about the left drug first (left is the most common drug if main.position == 0)
+        }else{
+            main.askOrder = 1 // this asks about the right drug first (right is the most common drug if main.position == 1)
+        }
+
+        // if main.position = 0, this asks about the left drug first
+        // main.askOrder = 1 // testing
+
+        this.progress = 0
+        // variables
+        // main.paradigmData = {{paradigmData}}
+        // main.groupData = {{groupData}} // 0 is A, 1 is B
+        // main.trialNumber = 0
+        // main.assets = 100+main.paradigmData[main.trialNumber]
+        // main.accuracyBonus = 0
+        // main.guesses = new Array()
+        // main.attentionFails = 0 // resets every trial
+        
+        // cache DOM
+        this.cacheDOM()
+        this.render(main.progress)
+        this.bindEvents()
+        // render page
+        
+
+    },
+
+    cacheDOM: function(){   
+        this.$co = $('#containerDiv') // container div
+        this.$drugA_Spans = this.$co.find('span[name=drugA_Name]')
+        this.$drugB_Spans = this.$co.find('span[name=drugB_Name]')
+
+        this.$drugA_Judgment = this.$co.find('#drugA_Judgment')
+        this.$drugB_Judgment = this.$co.find('#drugB_Judgment')
+
+        this.$drugA_Total = this.$co.find('#drugA_Total')
+        this.$drugB_Total = this.$co.find('#drugB_Total')
+
+        this.$drugA_Button = this.$co.find('#drugA_Button')
+        this.$drugB_Button = this.$co.find('#drugB_Button')
+
+        this.$drugA_textInput = this.$co.find('#drugA_textInput')
+        this.$drugB_textInput = this.$co.find('#drugB_textInput')
+
+
+        this.$drugA_Slider_Common = this.$co.find('#drugA_Slider_Common')
+        this.$drugA_Slider_Rare = this.$co.find('#drugA_Slider_Rare')
+        this.$drugB_Slider_Common = this.$co.find('#drugB_Slider_Common')
+        this.$drugB_Slider_Rare = this.$co.find('#drugB_Slider_Rare')
+
+        main.$drugA_Slider_Common_Div = this.$co.find('#drugA_Slider_Common_Div')
+        main.$drugB_Slider_Rare_Div =  this.$co.find('#drugB_Slider_Rare_Div')
+        main.$drugA_Slider_Rare_Div =  this.$co.find('#drugA_Slider_Rare_Div')
+        main.$drugB_Slider_Common_Div =  this.$co.find('#drugB_Slider_Common_Div')
+
+        this.$drugA_Slider_Div = this.$co.find('#sliderDivA')
+        this.$drugB_Slider_Div = this.$co.find('#sliderDivB')
+
+        this.$drugA_Image = this.$co.find('[name=drugA_Image]').toArray()
+        this.$drugB_Image = this.$co.find('[name=drugB_Image]').toArray()
+
+        this.$left_GB_Button = this.$co.find('#left_GB_Button')
+        this.$right_GB_Button = this.$co.find('#right_GB_Button')
+
+        this.$right_GB_drugA_Input = this.$co.find("#right_GB_drugA_Input")
+        this.$right_GB_drugB_Input = this.$co.find("#right_GB_drugB_Input")
+        this.$left_GB_drugA_Input = this.$co.find("#left_GB_drugA_Input")
+        this.$left_GB_drugB_Input = this.$co.find("#left_GB_drugA_Input")
+
+        this.$left_GB_Total = this.$co.find('#left_GB_Total')
+        this.$right_GB_Total = this.$co.find('#right_GB_Total')
+
+        this.$left_GB_Label = this.$co.find('[name=left_GB_Label]')
+        this.$right_GB_Label = this.$co.find('[name=right_GB_Label]')
+
+        this.$dataform = this.$co.find('#dataform')
+    },
+
+    render: function(progress){
+        main.$drugA_Spans.text(String(main.drugA_Name))
+        main.$drugB_Spans.text(String(main.drugB_Name))
+
+        if({{faces}} == 0){ // good on left
+            main.$left_GB_Total.text(main.goodOutcomes)
+            main.$left_GB_Label.text('good')
+
+            main.$right_GB_Total.text(main.badOutcomes)
+            main.$right_GB_Label.text('bad')
+        }
+
+        
+        
+        for(var i = 0; i < main.$drugA_Image.length; i++){
+            $(main.$drugA_Image[i]).attr('src', main.drugA_color)
+            $(main.$drugB_Image[i]).attr('src', main.drugB_color)
+        }
+
+            
+
+        // main.$drugB_Image.attr('src', main.drugB_color)
+
+        // put numbers is spans
+        if(main.position == 0){
+            // left drug more common
+            main.$drugA_Total.text('36')
+            main.$drugB_Total.text('12')
+
+            // $('#drugA_Slider_Common_Div').show()
+            // $('#drugB_Slider_Rare_Div').show()
+        }else{
+            // right drug more common
+            main.$drugA_Total.text('12')
+            main.$drugB_Total.text('36')
+
+            // $('#drugA_Slider_Rare_Div').show()
+            // $('#drugB_Slider_Common_Div').show()
+        }
+
+        if(main.progress == 0){
+            if(main.askOrder == 0){ // drug A first
+                // opacity
+                
+                main.$drugB_Judgment.css('opacity', '0.2')
+                // disable input and buttons
+                main.$drugB_textInput.prop('disabled', true)
+                
+            }else{
+                // opacity:
+                main.$drugA_Judgment.css('opacity', '0.2')
+                
+                // disable input and buttons
+                main.$drugA_textInput.prop('disabled', true)
+            }
+        }else{
+            if(main.askOrder == 0){ // drug B now
+                // switch opacity
+                main.$drugA_Judgment.css('opacity', '0.2')
+                main.$drugB_Judgment.css('opacity', '1.0')
+
+                // disable old, enable new
+                main.$drugA_textInput.prop('disabled', true)
+                main.$drugB_textInput.prop('disabled', false)
+
+                
+            }else{
+               // switch opacity
+                main.$drugB_Judgment.css('opacity', '0.2')
+                main.$drugA_Judgment.css('opacity', '1.0')
+
+                // disable old, enable new
+                main.$drugB_textInput.prop('disabled', true)
+                main.$drugA_textInput.prop('disabled', false)
+            }
+        }
+
+        main.$co.show()
+        
+    },
+
+
+    bindEvents: function(){
+
+        // click div, show button
+        // main.$drugA_Slider_Div.unbind().on('click', main.enableDrugA_Button)
+        // main.$drugB_Slider_Div.unbind().on('click', main.enableDrugB_Button)
+
+        // buttons
+        main.$drugA_Button.unbind().on('click', function(){
+            main.incrementJudgment('A')
+        })
+        main.$drugB_Button.unbind().on('click', function(){
+            main.incrementJudgment('B')
+        })
+
+        main.$left_GB_Button.unbind().on('click', function(){
+            main.incrementJudgment('L')
+        })
+
+        main.$right_GB_Button.unbind().on('click', function(){
+            main.incrementJudgment('R')
+        })
+
+
+        // // sliders
+        // main.$drugA_Slider_Common.slider({
+        //     formatter: function(value) {
+        //         return value+ '/36 BAD outcomes';
+        //     }
+        // });
+
+        // main.$drugB_Slider_Common.slider({
+        //     formatter: function(value) {
+        //         return value+ '/36 BAD outcomes';
+        //     }
+        // });
+
+        // main.$drugA_Slider_Rare.slider({
+        //     formatter: function(value) {
+        //         return value+ '/12 BAD outcomes';
+        //     }
+        // });
+
+        // main.$drugB_Slider_Rare.slider({
+        //     formatter: function(value) {
+        //         return value+ '/12 BAD outcomes';
+        //     }
+        // });
+
+    },
+
+    incrementJudgment: function(input){
+        if(input == 'L' | input == 'R'){
+            if(input == 'L'){
+                var value_A = main.$left_GB_drugA_Input.val()
+                var value_B = main.$left_GB_drugB_Input.val()
+
+                if(value_A == '' | value_B == ''){ // at least one guess missing
+                    alert("Please make a numeric guess about each drug!")
+                    return
+                }
+
+                if(Number.isInteger(Number(value_A)) == false | Number.isInteger(Number(value_B)) == false){
+                    alert('Please make a numeric guess about each drug!')
+                    return
+                }
+
+                // if the numbers don't add up (literally)
+                if(({{faces}} == 0 & main.condition == 'positive') | ({{faces}} == 1 & main.condition == 'negative')){ // 16 on the left
+                    if(Number(value_A) + Number(value_B) != 16){
+                        alert('Guesses for each drug must add to 16!')
+                        return
+                    }else{
+                        alert('got it!')
+                        return
+                    }
+                }
+
+
+            }else{
+
+                var value_A = main.$right_GB_drugA_Input.val()
+                var value_B = main.$right_GB_drugB_Input.val()
+
+                if(value_A == '' | value_B == ''){ // at least one guess missing
+                    alert("Please make a numeric guess about each drug!")
+                    return
+                }
+
+                if(Number.isInteger(Number(value_A)) == false | Number.isInteger(Number(value_B)) == false){
+                    alert('Please make a numeric guess about each drug!')
+                    return
+                }
+
+                // if the numbers don't add up (literally)
+                if({{faces}} == 0 & main.condition == 'positive'){ // 16 on the left
+                    if(Number(value_A) + Number(value_B) != 32){
+                        alert('Guesses for each drug must add to 32!')
+                        return
+                    }else{
+                        alert('got it!')
+                        return
+                    }
+
+                }
+
+            }
+
+
+        }else{
+            if(input == 'A'){
+                var value = main.$drugA_textInput.val()
+                var max = Number(main.$drugA_Total.text())    
+            }else{
+                var value = main.$drugB_textInput.val()
+                var max = Number(main.$drugB_Total.text())    
+            }
+
+            // rule out blanks and non-numbers
+            if(value == ''){
+                alert("Please make a numeric guess about the number of BAD outcomes.")
+                return
+            }else if(Number.isInteger(Number(value)) == false){
+                alert("Please make a numeric guess about the number of BAD outcomes.")
+                return
+            }
+
+            // rule out impossible numbers
+            value = Number(value)
+            if((value < 0 ) | (value > max) | (value % 1 != 0)){
+                alert('Please enter a number between 0 and '+max+'.')
+                return
+            }
+
+            // if we've made it this far, the value is legit.
+            console.log('value is '+value+', sending to Ajax function')
+            main.sendAjaxDrug(progress=main.progress, drug=input, max=max, value=value)
+            if(main.progress == 0){
+                main.progress ++
+
+                main.render(main.progress)
+                main.bindEvents()
+            }else{
+                main.mySubmit()
+            }
+        }
+    },
+
+    getTrialStartTime: function(){
+        var trialDate = new Date()
+        main.trialStartTime = trialDate.getTime()
+    },
+
+    enableDrugA_Button: function(){
+        main.$drugA_Button.css('visibility', 'visible')
+    },
+
+    enableDrugB_Button: function(){
+        main.$drugB_Button.css('visibility', 'visible')
+    },
+
+    initializeSlider: function(object, number){
+        object.slider({
+            formatter: function(value) {
+                return value+'/'+number+' BAD outcomes';
+            }
+        });
+    },
+
+    sendAjaxDrug: function(progress, drug, max, value){
+        console.log('Progress: '+progress)
+        console.log('Drug: '+drug)
+        console.log('Maximum: '+max)
+        console.log('Judgment: '+value)
+        
+        if(drug == 'A'){
+            if(main.position == 0){
+                $('#drugInput').val('Common')
+                // console.log('Common Drug (Left)')
+                
+            }else{
+                $('#drugInput').val('Rare')
+                // console.log('Rare Drug (Left)')
+                
+            }
+            var color = main.drugA_color
+            var drugName = main.drugA_Name
+
+        }else if(drug == 'B'){
+            if(main.position == 0){
+                $('#drugInput').val('Rare')
+                // console.log('Rare Drug (Right)')
+                
+            }else{
+                $('#drugInput').val('Common')
+                // console.log('Common Drug (Right)')
+                
+            }
+            var color = main.drugB_color
+            var drugName = main.drugB_Name
+            // alert('send Ajax function, drug '+String(drug)+ ' is '+String(value))
+        }
+
+        // console.log('Judgment number: '+String(main.progress+1))
+        // console.log('Drug Name: '+String(drugName))
+        // console.log('Judgment: '+String(value))
+
+        if(color == '/static/images/DarkBlue.png'){
+            // console.log('Color: Dark Blue')
+        }else if(color == '/static/images/LightBlue.png'){
+            // console.log('Color: Light Blue')
+        }else if(color == '/static/images/Orange.png'){
+            // console.log('Color: Orange')
+        }else if(color == '/static/images/Purple.png'){
+            // console.log('Color: Purple')
+        }
+        
+        $('#drugNameInput').val(drugName)
+        $('#drugColorInput').val(color)
+        $('#judgmentInput').val(value)
+        console.log($('#judgmentInput').val())
+        // $('#judgmentInput').val(0) // testing
+        $('#judgmentNumberInput').val(main.progress+1)
+
+    
+        // send to back end with ajax
+
+        $.ajax({
+         url:"/AjaxMemoryTest",
+         data: main.$dataform.serialize(),
+         // data: $('#dataform').serialize(),
+         dataType: 'json',
+         type: "POST",
+         cache: false,
+         // error: function() {alert("Error")},
+         // success: function() {alert("Success")}
+        });
+
+
+    },
+
+    mySubmit: function(){
+        if({{testOrder}} == 0){
+            $('#submitFormOrderZero').submit()       
+        }else{
+            $('#submitFormOrderOne').submit()       
+        } 
+        // alert('submitting form!')
+    },
+
+    startTimer: function(){
+        start = new Date();
+        return start.getTime(); 
+    }
+        
+}
+
+
+
+
+
+
+main.init()
+
+
+
+
+// })
+ </script>
+{% endblock %}

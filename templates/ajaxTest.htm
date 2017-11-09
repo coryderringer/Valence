@@ -1,0 +1,61 @@
+{% extends "_base.htm" %}
+
+{% block title %}
+	Ajax Data
+{% endblock %}
+
+{% block bodycontent %}
+<head>
+</head>
+<body>
+
+
+<!-- ########## Data For Each Scenario ########## -->
+<div class="container">
+	MemoryData:
+
+	<table class="table td">
+
+	<!-- Header Row -->
+	<tr>
+	<th>Usernum</th>
+	<th>Account</th>
+	<th>Scenario</th>
+	<th>Drug(Common_vs_Rare)</th>
+	<th>DrugName</th>
+	<th>DrugColor</th>
+	<th>DrugJudgment</th>
+	<th>JudgmentNumber</th>
+
+	</tr>
+
+	<!-- Subsequent Rows -->
+	{% for i in t %}
+	<tr>
+	<th>{{ i.usernum }}</th>
+	<th>{{ i.account }}</th>
+	<th>{{ i.scenario }}</th>
+
+	<th>{{ i.drug }}</th>
+	<th>{{ i.drugName }}</th>
+	<th>{{ i.drugColor }}</th>
+	<th>{{ i.drugJudgment }}</th>
+	<th>{{ i.judgmentNumber }}</th>
+
+
+	</tr>
+	{% endfor %}
+	</table>
+</div>
+
+
+
+
+
+</body>
+{% endblock %}
+
+
+
+
+
