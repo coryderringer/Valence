@@ -15,6 +15,28 @@ indexes:
   - name: usernum
   - name: scenario
 
+- kind: DrugMemoryJudgmentData
+  properties:
+  - name: usernum
+  - name: scenario
+
+- kind: DrugMemoryJudgmentData
+  properties:
+  - name: usernum
+  - name: scenario
+  - name: judgmentNumber
+
+- kind: OutcomeMemoryJudgmentData
+  properties:
+  - name: usernum
+  - name: scenario
+
+- kind: ScenarioData
+  properties:
+  - name: usernum
+  - name: scenario
+  - name: trialNumber
+
 - kind: ScenarioData
   properties:
   - name: usernum

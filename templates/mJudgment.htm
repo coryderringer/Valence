@@ -39,7 +39,7 @@
                 </div>
 
                 <div class="text-center">
-                    <div id="judgment1Div" class="text-center">
+                    <div id="judgment1Div" class="text-center" style="display: none">
                         <h2>How many patients had BAD outcomes?</h2>
                         <!-- find a place for the patient impact info here -->
                         <div class="row">
@@ -89,7 +89,7 @@
                         </div>
                     </div>
 
-                    <div id="judgment2Div" class="text-center">
+                    <div id="judgment2Div" class="text-center" style="display: none">
                         <h2>How many patients took each drug?</h2>
                         <!-- find a place for the patient impact info here -->
                         <div class="row">
@@ -170,12 +170,24 @@
         
 
             <!-- ajax form to send tbt data to datastore -->
-            <form id="dataform" method="post" action="/AjaxMemoryTest" style="display:none">
+            <form id="dataform1" method="post" action="/AjaxOutcomeMemoryTest" style="display:none">
                 <input id="drugInput" name="drugInput" type="hidden"> <!-- common or rare -->
-                <input id="drugNameInput" name="drugNameInput">
-                <input id="drugColorInput" name="drugColorInput">
-                <input id="judgmentInput" name="judgmentInput"> 
-                <input id="judgmentNumberInput" name="judgmentNumberInput"> <!-- 1st or second -->
+                <input id="drugNameInput" name="drugNameInput" type="hidden">
+                <input id="drugColorInput" name="drugColorInput" type="hidden">
+                <input id="judgmentInput" name="judgmentInput" type="hidden"> 
+                <input id="judgmentNumberInput" name="judgmentNumberInput" type="hidden"> <!-- 1st or second -->
+                    <!-- data[13] -->
+                <input id="Submit" onclick="mySubmit()" value="Submit">
+            </form>
+
+            <form id="dataform2" method="post" action="/AjaxDrugMemoryTest" style="display:none">
+                <input id="outcomeInput" name="outcomeInput" type="hidden"> <!--  -->
+                <input id="outcomeTotalInput" name="outcomeTotalInput" type="hidden"> <!--  -->
+                <input id="drugA_JudgmentInput" name="drugA_JudgmentInput" type="hidden"> 
+                <input id="drugB_JudgmentInput" name="drugB_JudgmentInput" type="hidden">
+                <input id="drugA_NameInput" name="drugA_NameInput" type="hidden">
+                <input id="drugB_NameInput" name="drugB_NameInput" type="hidden">
+                <input id="judgmentNumberInput2" name="judgmentNumberInput2" type="hidden"> <!-- 1st or second -->
                     <!-- data[13] -->
                 <input id="Submit" onclick="mySubmit()" value="Submit">
             </form>
@@ -216,6 +228,9 @@ var main = {
     init: function(){
         this.drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
         this.drugs = {{drugs}}
+        this.memOrder = {{memOrder}}
+        // this.memOrder = 1 // testing
+        this.faces = {{faces}}
 
         this.condition = '{{condition}}' // if condition is pos, pos is rare 
         // 32 neg and 16 pos; if neg this is reversed
@@ -248,15 +263,41 @@ var main = {
 
         // main.position is complicated...In both of the data files, 0 is the most common drug ID (Drug A). If main.position is zero, 1 becomes the most common drug ID in the data. Either way, we think of "Drug A" as the common drug, in keeping with "Group A" in the literature. What I've done here (might be a mistake, because it's a little confusing) is to always call the drug on the left side of the screen "Drug A". So Drug A here (and in the TBT scenario page) is just the drug that was on the left, NOT the most common drug. If main.position = 0, the drug on the left is more common. If main.position = 1, the drug on the right is more common. 
 
-        // randomize order of asking
+        // randomize order of asking (drugs)
         if(Math.round(Math.random()) == 0){
-            main.askOrder = 0 // this asks about the left drug first (left is the most common drug if main.position == 0)
+            main.drugAskOrder = 0 // this asks about the left drug first (left is the most common drug if main.position == 0)
         }else{
-            main.askOrder = 1 // this asks about the right drug first (right is the most common drug if main.position == 1)
+            main.drugAskOrder = 1 // this asks about the right drug first (right is the most common drug if main.position == 1)
+        }
+
+        // randomize order of asking (outcomes)
+        if(Math.round(Math.random()) == 0){
+            main.outcomeAskOrder = 0
+        }else{
+            main.outcomeAskOrder = 1
+        }
+
+        
+        if(main.drugAskOrder == 0){
+            var drugQuestions = [main.drugAJudgment, main.drugBJudgment]
+        }else{
+            var drugQuestions = [main.drugBJudgment, main.drugAJudgment]
+        }
+
+        if(main.outcomeAskOrder == 0){
+            var outcomeQuestions = [main.leftOutcomeJudgment, main.rightOutcomeJudgment]
+        }else{
+            var outcomeQuestions = [main.rightOutcomeJudgment, main.leftOutcomeJudgment]
+        }
+
+        if(main.memOrder == 0){
+            main.questionFunctions = drugQuestions.concat(outcomeQuestions)
+        }else{
+            main.questionFunctions = outcomeQuestions.concat(drugQuestions)
         }
 
         // if main.position = 0, this asks about the left drug first
-        // main.askOrder = 1 // testing
+        // main.drugAskOrder = 1 // testing
 
         this.progress = 0
         // variables
@@ -317,7 +358,7 @@ var main = {
         this.$right_GB_drugA_Input = this.$co.find("#right_GB_drugA_Input")
         this.$right_GB_drugB_Input = this.$co.find("#right_GB_drugB_Input")
         this.$left_GB_drugA_Input = this.$co.find("#left_GB_drugA_Input")
-        this.$left_GB_drugB_Input = this.$co.find("#left_GB_drugA_Input")
+        this.$left_GB_drugB_Input = this.$co.find("#left_GB_drugB_Input")
 
         this.$left_GB_Total = this.$co.find('#left_GB_Total')
         this.$right_GB_Total = this.$co.find('#right_GB_Total')
@@ -325,7 +366,8 @@ var main = {
         this.$left_GB_Label = this.$co.find('[name=left_GB_Label]')
         this.$right_GB_Label = this.$co.find('[name=right_GB_Label]')
 
-        this.$dataform = this.$co.find('#dataform')
+        this.$dataform1 = this.$co.find('#dataform1')
+        this.$dataform2 = this.$co.find('#dataform2')
     },
 
     render: function(progress){
@@ -338,9 +380,14 @@ var main = {
 
             main.$right_GB_Total.text(main.badOutcomes)
             main.$right_GB_Label.text('bad')
+        }else{
+            main.$left_GB_Total.text(main.badOutcomes)
+            main.$left_GB_Label.text('bad')
+
+            main.$right_GB_Total.text(main.goodOutcomes)
+            main.$right_GB_Label.text('good')
         }
 
-        
         
         for(var i = 0; i < main.$drugA_Image.length; i++){
             $(main.$drugA_Image[i]).attr('src', main.drugA_color)
@@ -368,47 +415,76 @@ var main = {
             // $('#drugB_Slider_Common_Div').show()
         }
 
-        if(main.progress == 0){
-            if(main.askOrder == 0){ // drug A first
-                // opacity
-                
-                main.$drugB_Judgment.css('opacity', '0.2')
-                // disable input and buttons
-                main.$drugB_textInput.prop('disabled', true)
-                
-            }else{
-                // opacity:
-                main.$drugA_Judgment.css('opacity', '0.2')
-                
-                // disable input and buttons
-                main.$drugA_textInput.prop('disabled', true)
-            }
-        }else{
-            if(main.askOrder == 0){ // drug B now
-                // switch opacity
-                main.$drugA_Judgment.css('opacity', '0.2')
-                main.$drugB_Judgment.css('opacity', '1.0')
-
-                // disable old, enable new
-                main.$drugA_textInput.prop('disabled', true)
-                main.$drugB_textInput.prop('disabled', false)
-
-                
-            }else{
-               // switch opacity
-                main.$drugB_Judgment.css('opacity', '0.2')
-                main.$drugA_Judgment.css('opacity', '1.0')
-
-                // disable old, enable new
-                main.$drugB_textInput.prop('disabled', true)
-                main.$drugA_textInput.prop('disabled', false)
-            }
-        }
+        // progress now goes from 0-3
+        main.questionFunctions[main.progress]()
 
         main.$co.show()
         
     },
 
+    leftOutcomeJudgment: function(){
+        // make right side opaque, disable
+        $('#right_GB_Judgment').css('opacity', '0.2')
+        $('#right_GB_Button').prop('disabled', true)
+        $('#right_GB_drugA_Input').prop('disabled', true)
+        $('#right_GB_drugB_Input').prop('disabled', true)
+
+        // make this side not opaque, enable
+        $('#left_GB_Judgment').css('opacity', '1.0')
+        $('#left_GB_Button').prop('disabled', false)
+        $('#left_GB_drugA_Input').prop('disabled', false)
+        $('#left_GB_drugB_Input').prop('disabled', false)        
+
+        $('#judgment1Div').hide()
+        $('#judgment2Div').show()
+    },
+
+    rightOutcomeJudgment: function(){
+        // make left side opaque, disable
+        $('#left_GB_Judgment').css('opacity', '0.2')
+        $('#left_GB_Button').prop('disabled', true)
+        $('#left_GB_drugA_Input').prop('disabled', true)
+        $('#left_GB_drugB_Input').prop('disabled', true)
+
+        // make this side not opaque, enable
+        $('#right_GB_Judgment').css('opacity', '1.0')
+        $('#right_GB_Button').prop('disabled', false)
+        $('#right_GB_drugA_Input').prop('disabled', false)
+        $('#right_GB_drugB_Input').prop('disabled', false)        
+
+        $('#judgment1Div').hide()
+        $('#judgment2Div').show()
+    },
+
+    drugAJudgment: function(){
+        // make left side opaque, disable
+        main.$drugB_Judgment.css('opacity', '0.2')
+        main.$drugB_textInput.prop('disabled', true)
+
+        // make this side not opaque, enable
+        main.$drugA_Judgment.css('opacity', '1.0')
+        main.$drugA_textInput.prop('disabled', false)
+
+
+        $('#judgment2Div').hide()
+        $('#judgment1Div').show()
+
+    },
+
+    drugBJudgment: function(){
+        // make left side opaque, disable
+        main.$drugA_Judgment.css('opacity', '0.2')
+        main.$drugA_textInput.prop('disabled', true)
+
+        // make this side not opaque, enable
+        main.$drugB_Judgment.css('opacity', '1.0')
+        main.$drugB_textInput.prop('disabled', false)
+
+
+        $('#judgment2Div').hide()
+        $('#judgment1Div').show()
+
+    },
 
     bindEvents: function(){
 
@@ -460,100 +536,100 @@ var main = {
 
     },
 
-    incrementJudgment: function(input){
-        if(input == 'L' | input == 'R'){
-            if(input == 'L'){
-                var value_A = main.$left_GB_drugA_Input.val()
-                var value_B = main.$left_GB_drugB_Input.val()
+    drugJudgmentCheck: function(value_A, value_B, max, side){ // judgment for each drug (given outcomes)
+        // makes sure there judgment is legal, returns zero if it's good
+        console.log(value_A)
+        console.log(value_B)
+        if(value_A == '' | value_B == ''){ // at least one guess missing
+            return "Please make a numeric guess about each drug!"
+        }
+        if(Number.isInteger(Number(value_A)) == false | Number.isInteger(Number(value_B)) == false){
+            return 'Please make a numeric guess about each drug!'
+        }
 
-                if(value_A == '' | value_B == ''){ // at least one guess missing
-                    alert("Please make a numeric guess about each drug!")
-                    return
+        if(side == 'L'){    
+            if(({{faces}} == 0 & main.condition == 'positive') | ({{faces}} == 1 & main.condition == 'negative')){ // 16 on the left
+                if(Number(value_A) + Number(value_B) != 16){
+                    return 'Guesses for each drug must add to 16!'
                 }
-
-                if(Number.isInteger(Number(value_A)) == false | Number.isInteger(Number(value_B)) == false){
-                    alert('Please make a numeric guess about each drug!')
-                    return
-                }
-
-                // if the numbers don't add up (literally)
-                if(({{faces}} == 0 & main.condition == 'positive') | ({{faces}} == 1 & main.condition == 'negative')){ // 16 on the left
-                    if(Number(value_A) + Number(value_B) != 16){
-                        alert('Guesses for each drug must add to 16!')
-                        return
-                    }else{
-                        alert('got it!')
-                        return
-                    }
-                }
-
-
-            }else{
-
-                var value_A = main.$right_GB_drugA_Input.val()
-                var value_B = main.$right_GB_drugB_Input.val()
-
-                if(value_A == '' | value_B == ''){ // at least one guess missing
-                    alert("Please make a numeric guess about each drug!")
-                    return
-                }
-
-                if(Number.isInteger(Number(value_A)) == false | Number.isInteger(Number(value_B)) == false){
-                    alert('Please make a numeric guess about each drug!')
-                    return
-                }
-
-                // if the numbers don't add up (literally)
-                if({{faces}} == 0 & main.condition == 'positive'){ // 16 on the left
-                    if(Number(value_A) + Number(value_B) != 32){
-                        alert('Guesses for each drug must add to 32!')
-                        return
-                    }else{
-                        alert('got it!')
-                        return
-                    }
-
-                }
-
             }
+        }else{
+            if(({{faces}} == 0 & main.condition == 'positive') | ({{faces}} == 1 & main.condition == 'negative')){ // 16 on the left
+                if(Number(value_A) + Number(value_B) != 32){
+                    return 'Guesses for each drug must add to 32!'
+                }
+            }
+        }
+        
+        return 0 // no problems
+    },
 
+    outcomeJudgmentCheck: function(value, max, side){
+        // rule out blanks and non-numbers
+        console.log(value)
+        if(value == ''){
+            return "Please make a numeric guess about the number of BAD outcomes."
+            
+        }else if(Number.isInteger(Number(value)) == false){
+            return "Please make a numeric guess about the number of BAD outcomes."
+            
+        }
+
+        // rule out impossible numbers
+        value = Number(value)
+        if((value < 0 ) | (value > max) | (value % 1 != 0)){
+            return 'Please enter a number between 0 and '+max+'.'
+        }
+
+        return 0
+    },
+
+    incrementJudgment: function(input){
+        // console.log(input)
+        // console.log(faceOrder)
+        if(input == 'R'){
+            var value_A = main.$right_GB_drugA_Input.val()
+            var value_B = main.$right_GB_drugB_Input.val()
+            var max = value_A + value_B
+            var problems = main.drugJudgmentCheck(value_A=value_A, value_B=value_B, max=max, side=input)
+        }else if(input == 'L'){
+            var value_A = main.$left_GB_drugA_Input.val()
+            var value_B = main.$left_GB_drugB_Input.val()
+            var max = value_A + value_B
+            var problems = main.drugJudgmentCheck(value_A=value_A, value_B=value_B, max=max, side=input)        
+        }else if(input == 'A'){
+            var value = Number(main.$drugA_textInput.val())
+            var max = Number(main.$drugA_Total.text()) 
+            var problems = main.outcomeJudgmentCheck(value=value, max=max, side=input) 
+        }else if(input == 'B'){
+            var value = main.$drugB_textInput.val()
+            var max = Number(main.$drugB_Total.text()) 
+            var problems = main.outcomeJudgmentCheck(value=value, max=max, side=input)  
+
+        }
+        
+        if(problems != 0){ // if there are problems, alert and return
+            alert(problems)
+            return
+        }
+
+        // if we've made it this far, the value is legit.
+        // console.log('value is '+value+', sending to Ajax function')
+        if(input == 'A' | input == 'B'){
+            main.sendAjaxOutcome(progress=main.progress, drug=input, max=max, value=value) // recalling outcome for each drug
+        }else if(input == 'L' | input == 'R'){
+            main.sendAjaxDrug(progress=main.progress, outcome=input, value_A=value_A, value_B=value_B) // recalling drug for each outcome
+        }
+        if(main.progress < 3){
+            main.progress ++
+
+            console.log('Rendering')
+            main.render(main.progress)
+            main.bindEvents()
 
         }else{
-            if(input == 'A'){
-                var value = main.$drugA_textInput.val()
-                var max = Number(main.$drugA_Total.text())    
-            }else{
-                var value = main.$drugB_textInput.val()
-                var max = Number(main.$drugB_Total.text())    
-            }
-
-            // rule out blanks and non-numbers
-            if(value == ''){
-                alert("Please make a numeric guess about the number of BAD outcomes.")
-                return
-            }else if(Number.isInteger(Number(value)) == false){
-                alert("Please make a numeric guess about the number of BAD outcomes.")
-                return
-            }
-
-            // rule out impossible numbers
-            value = Number(value)
-            if((value < 0 ) | (value > max) | (value % 1 != 0)){
-                alert('Please enter a number between 0 and '+max+'.')
-                return
-            }
-
-            // if we've made it this far, the value is legit.
-            console.log('value is '+value+', sending to Ajax function')
-            main.sendAjaxDrug(progress=main.progress, drug=input, max=max, value=value)
-            if(main.progress == 0){
-                main.progress ++
-
-                main.render(main.progress)
-                main.bindEvents()
-            }else{
-                main.mySubmit()
-            }
+            console.log('submitting form')
+            // main.mySubmit()
         }
     },
 
@@ -578,7 +654,7 @@ var main = {
         });
     },
 
-    sendAjaxDrug: function(progress, drug, max, value){
+    sendAjaxOutcome: function(progress, drug, max, value){
         console.log('Progress: '+progress)
         console.log('Drug: '+drug)
         console.log('Maximum: '+max)
@@ -637,14 +713,62 @@ var main = {
         // send to back end with ajax
 
         $.ajax({
-         url:"/AjaxMemoryTest",
-         data: main.$dataform.serialize(),
-         // data: $('#dataform').serialize(),
+         url:"/AjaxOutcomeMemoryTest",
+         data: main.$dataform1.serialize(),
+         // data: $('#dataform1').serialize(),
          dataType: 'json',
          type: "POST",
          cache: false,
          // error: function() {alert("Error")},
          // success: function() {alert("Success")}
+        });
+
+
+    },
+
+    sendAjaxDrug: function(progress, outcome, value_A, value_B){
+        console.log('Progress: '+progress)
+        console.log('Outcome: '+outcome)
+        console.log('Value A: '+value_A)
+        console.log('Value B: '+value_B)
+        
+        $('#drugA_JudgmentInput').val(value_A)
+        $('#drugB_JudgmentInput').val(value_B)
+        $('#judgmentNumberInput2').val(progress+1)
+        $('#drugA_NameInput').val(main.$drugA_Spans.text().slice(0,5))
+        $('#drugB_NameInput').val(main.$drugB_Spans.text().slice(0,5))
+
+        if(outcome == 'L'){
+            // faces tells you if good is left or right
+            if({{faces}} == 0){
+                $('#outcomeTotalInput').val(main.goodOutcomes) // main.goodOutcomes is number of good outcomes
+                $('#outcomeInput').val('GOOD')
+            }else{
+                $('#outcomeTotalInput').val(main.badOutcomes)
+                $('#outcomeInput').val('BAD')
+            }
+        }else if(outcome == 'R'){
+            // faces tells you if good is left or right
+            if({{faces}} == 0){
+                $('#outcomeTotalInput').val(main.badOutcomes) // main.goodOutcomes is number of good outcomes
+                $('#outcomeInput').val('BAD')
+            }else{
+                $('#outcomeTotalInput').val(main.goodOutcomes)
+                $('#outcomeInput').val('GOOD')
+            }
+        }
+
+        // send to back end with ajax
+
+        $.ajax({
+         url:"/AjaxDrugMemoryTest",
+         data: main.$dataform2.serialize(),
+         // data: $('#dataform1').serialize(),
+         dataType: 'json',
+         type: "POST",
+         cache: false,
+         error: function() {alert("Error")},
+         success: function() {alert("Success")}
         });
 
 

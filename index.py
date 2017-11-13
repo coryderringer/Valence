@@ -46,7 +46,7 @@ class ScenarioData(db.Model):
 	trialCorrect = 		db.StringProperty()
 	profitImpact = 		db.IntegerProperty()
 	
-class MemoryJudgmentData(db.Model):
+class OutcomeMemoryJudgmentData(db.Model):
 	user  =				db.ReferenceProperty(User)
 	account = 			db.StringProperty()
 	usernum =			db.IntegerProperty()
@@ -57,6 +57,21 @@ class MemoryJudgmentData(db.Model):
 	drugColor = 		db.StringProperty() # color of drug
 	drugJudgment =		db.IntegerProperty() # numerical judgment out of 100
 	judgmentNumber =	db.IntegerProperty() # 1st or second judgment
+
+class DrugMemoryJudgmentData(db.Model):
+	user  =				db.ReferenceProperty(User)
+	account = 			db.StringProperty()
+	usernum =			db.IntegerProperty()
+	scenario = 			db.IntegerProperty()
+
+	outcome = 				db.StringProperty() # common or rare drug
+	outcomeTotal = 			db.IntegerProperty() # actual name they saw
+	drugA_Judgment = 		db.IntegerProperty() # color of drug
+	drugB_Judgment =		db.IntegerProperty() # numerical judgment out of 100
+	drugA_Name = 			db.StringProperty()
+	drugB_Name = 			db.StringProperty()
+	judgmentNumber =		db.IntegerProperty() # 1st or second judgment
+
 
 class CausalJudgmentData(db.Model):
 	user  =				db.ReferenceProperty(User)
@@ -214,9 +229,9 @@ class AjaxHandler(webapp.RequestHandler):
 		obj.put()
 		self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
 
-class AjaxMemoryHandler(webapp.RequestHandler):
+class AjaxOutcomeMemoryHandler(webapp.RequestHandler):
 	def get(self):
-		que=db.Query(MemoryJudgmentData)
+		que=db.Query(OutcomeMemoryJudgmentData)
 		que.order("usernum").order("scenario").order("judgmentNumber")
 		d=que.fetch(limit=10000)
 		doRender(self, 'ajaxTest.htm',{'d':d})
@@ -235,12 +250,12 @@ class AjaxMemoryHandler(webapp.RequestHandler):
 		scenario = self.session['scenario']
 
 		# how to check if there are example rows in the datastore
-		que = db.Query(MemoryJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario).filter('judgmentNumber =', judgmentNumber)
+		que = db.Query(OutcomeMemoryJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario).filter('judgmentNumber =', judgmentNumber)
 		results = que.fetch(limit=1000)
 		
 		# make all of the data items into 3-value arrays, then make a loop to put them in the datastore
 		if (len(results) == 0):   
-			newajaxmessage = MemoryJudgmentData(
+			newajaxmessage = OutcomeMemoryJudgmentData(
 				user=self.session['userkey'],
 				usernum = self.session['usernum'],
 				account = self.session['account'],
@@ -271,6 +286,80 @@ class AjaxMemoryHandler(webapp.RequestHandler):
 			
 			obj.put()
 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
+
+
+class AjaxDrugMemoryHandler(webapp.RequestHandler):
+	def get(self):
+		que=db.Query(DrugMemoryJudgmentData)
+		que.order("usernum").order("scenario").order("judgmentNumber")
+		d=que.fetch(limit=10000)
+		doRender(self, 'ajaxTest.htm',{'d':d})
+
+	def post(self):
+		self.session=get_current_session()
+
+
+  		outcome = str(self.request.get('outcomeInput')) # good or bad
+  		outcomeTotal = int(self.request.get('outcomeTotalInput'))
+  		drugA_Judgment = int(self.request.get('drugA_JudgmentInput'))
+  		drugB_Judgment = int(self.request.get('drugB_JudgmentInput'))
+  		drugA_Name = str(self.request.get('drugA_NameInput'))
+  		drugB_Name = str(self.request.get('drugB_NameInput'))
+  		judgmentNumber = int(self.request.get('judgmentNumberInput2'))
+
+  		logging.info('outcome: '+outcome)
+  		logging.info('outcomeTotal: '+str(outcomeTotal))
+  		logging.info('drugA_Judgment: '+str(drugA_Judgment))
+  		logging.info('drugB_Judgment: '+str(drugB_Judgment))
+  		logging.info('drugA_Name: '+drugA_Name)
+  		logging.info('drugB_Name: '+drugB_Name)
+  		logging.info('judgmentNumber: '+str(judgmentNumber))
+
+  		scenario = self.session['scenario']
+  		usernum = self.session['usernum']
+
+
+		# how to check if there are example rows in the datastore
+		que = db.Query(OutcomeMemoryJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario).filter('judgmentNumber =', judgmentNumber)
+		results = que.fetch(limit=1000)
+		
+		# make all of the data items into 3-value arrays, then make a loop to put them in the datastore
+		if (len(results) == 0):   
+			newajaxmessage = DrugMemoryJudgmentData(
+				user=self.session['userkey'],
+				usernum = usernum,
+				account = self.session['account'],
+				scenario = scenario,
+
+				outcome = outcome,
+				outcomeTotal = outcomeTotal,
+				drugA_Judgment = drugA_Judgment,
+				drugB_Judgment = drugB_Judgment,
+				drugA_Name = drugA_Name,
+				drugB_Name = drugB_Name,
+				judgmentNumber = judgmentNumber);
+		
+			newajaxmessage.put()
+			self.response.out.write(json.dumps(({'blah': 'blah'}))) # not sure what this does?
+
+		else:
+			obj = que.get()
+			obj.user=self.session['userkey']
+			obj.usernum = usernum
+			obj.account = self.session['account']
+			obj.scenario = scenario
+
+			obj.outcome = outcome
+			obj.outcomeTotal = outcomeTotal
+			obj.drugA_Judgment = drugA_Judgment
+			obj.drugB_Judgment = drugB_Judgment
+			obj.drugA_Name = drugA_Name
+			obj.drugB_Name = drugB_Name
+			obj.judgmentNumber = judgmentNumber
+			
+			obj.put()
+			self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
+
 
 class AjaxCausalHandler(webapp.RequestHandler):
 	def get(self):
@@ -435,8 +524,9 @@ class FirstJudgmentHandler(webapp.RequestHandler):
 				'drugColors': drugColors,
 				'position': position,
 				'testOrder':self.session['testOrder'],
-				'condition':conditions,
-				'faces': self.session['faces']})
+				'condition':condition,
+				'faces': self.session['faces'],
+				'memOrder':self.session['memOrder']})
 		else:
 			# have to pass a "progress" variable into the page so it knows which handler to post
 			doRender(self, 'cJudgment.htm',
@@ -483,7 +573,8 @@ class SecondJudgmentHandler(webapp.RequestHandler):
 				'position': position,
 				'testOrder':self.session['testOrder'],
 				'condition':conditions,
-				'faces': self.session['faces']})
+				'faces': self.session['faces'],
+				'memOrder':self.session['memOrder']})
 
 	def post(self):
 
@@ -531,7 +622,8 @@ class TestHandler(webapp.RequestHandler):	# handler that renders a specific page
 			'position': 1,
 			'testOrder':0,
 			'condition':'positive',
-			'faces':0})
+			'faces':0,
+			'memOrder':0})
 
 	
 
@@ -571,20 +663,24 @@ class DataHandler(webapp.RequestHandler):
 		# if password == "":
 
 			que=db.Query(ScenarioData)
-			que.order("usernum").order("trialNumber")
+			que.order("usernum").order("scenario").order("trialNumber")
 			d=que.fetch(limit=10000)
 			
 			que2=db.Query(User)
 			que2.order("usernum")
 			u=que2.fetch(limit=10000)
 			
-			que3 = db.Query(MemoryJudgmentData)
-			que3.order("usernum")
+			que3 = db.Query(OutcomeMemoryJudgmentData)
+			que3.order("usernum").order("scenario")
 			t = que3.fetch(limit=10000)
 
-			que4 = db.Query(CausalJudgmentData)
-			que4.order("usernum").order("scenario")
-			c = que4.fetch(limit=10000)
+			que4 = db.Query(DrugMemoryJudgmentData)
+			que4.order("usernum").order("scenario").order("judgmentNumber")
+			v = que4.fetch(limit=10000)
+
+			que5 = db.Query(CausalJudgmentData)
+			que5.order("usernum").order("scenario")
+			c = que5.fetch(limit=10000)
 
 			if page == 'scenario':
 				doRender(
@@ -600,7 +696,8 @@ class DataHandler(webapp.RequestHandler):
 
 			elif page == 'memoryTest':
 				doRender(self, 'ajaxTest.htm',
-					{'t':t})
+					{'t':t,
+					'v':v})
 			
 			elif page == 'causalTest':
 				doRender(self, 'ajaxCausalTest.htm',
@@ -905,6 +1002,11 @@ class MturkIDHandler(webapp.RequestHandler):
 		# order of asking (memory vs causal)
 		testOrder = random.choice([0,1])
 
+		# within memory, order of asking C|E or E|C
+		# 0 is E|C first
+		memOrder = random.choice([0,1])
+
+
 		# counterbalance left/right for faces at the level of the participant
 		if usernum % 2 == 0:
 			faces = 0 # good on the left
@@ -938,7 +1040,8 @@ class MturkIDHandler(webapp.RequestHandler):
 			race=0,
 			age=0,
 			bonusAmt=0,
-			testOrder = testOrder); 
+			testOrder = testOrder,
+			memOrder = memOrder); 
 
 		# dataframe modeling, but I'm not sure what exactly
 		userkey = newuser.put()
@@ -968,6 +1071,7 @@ class MturkIDHandler(webapp.RequestHandler):
 		self.session['trialGuesses']		= trialGuesses
 		self.session['userkey']				= userkey
 		self.session['usernum']				= usernum
+		self.session['memOrder']			= memOrder
 		
 		
 		# doRender(self, 'qualify.htm') no need if we're using SONA
@@ -988,7 +1092,8 @@ class MturkIDHandler(webapp.RequestHandler):
 
 application = webapp.WSGIApplication([
 	('/ajax', AjaxHandler),
-	('/AjaxMemoryTest', AjaxMemoryHandler),
+	('/AjaxOutcomeMemoryTest', AjaxOutcomeMemoryHandler),
+	('/AjaxDrugMemoryTest', AjaxDrugMemoryHandler),
 	('/AjaxCausalTest', AjaxCausalHandler),
 	('/preScenario', preScenarioHandler),
 	('/instructions', InstructionsHandler),
@@ -1000,8 +1105,8 @@ application = webapp.WSGIApplication([
 	('/qualify', QualifyHandler),
 	('/demographics', DemographicsHandler),
 	('/mturkid', MturkIDHandler), 
-	# ('/.*',      MturkIDHandler)],  #default page
-	('/.*',      TestHandler)],  # testing
+	('/.*',      MturkIDHandler)],  #default page
+	# ('/.*',      TestHandler)],  # testing
 	debug=True)
 
 def main():

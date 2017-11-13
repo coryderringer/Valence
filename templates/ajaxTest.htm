@@ -12,7 +12,7 @@
 
 <!-- ########## Data For Each Scenario ########## -->
 <div class="container">
-	MemoryData:
+	OutcomeMemoryData: (given drug, guess bad outcomes)
 
 	<table class="table td">
 
@@ -40,6 +40,46 @@
 	<th>{{ i.drugName }}</th>
 	<th>{{ i.drugColor }}</th>
 	<th>{{ i.drugJudgment }}</th>
+	<th>{{ i.judgmentNumber }}</th>
+
+
+	</tr>
+	{% endfor %}
+	</table>
+
+	DrugMemoryData: (given outcome, guess each drug)
+
+	<table class="table td">
+
+	<!-- Header Row -->
+	<tr>
+	<th>Usernum</th>
+	<th>Account</th>
+	<th>Scenario</th>
+	<th>Outcome(Good vs Bad)</th>
+	<th>Drug A Guess</th>
+	<th>Drug B Guess</th>
+	<th>Total</th>
+	<th>Drug A Name</th>
+	<th>Drug B Name</th>
+	<th>JudgmentNumber</th>
+
+
+	</tr>
+
+	<!-- Subsequent Rows -->
+	{% for i in v %}
+	<tr>
+	<th>{{ i.usernum }}</th>
+	<th>{{ i.account }}</th>
+	<th>{{ i.scenario }}</th>
+
+	<th>{{ i.outcome }}</th>
+	<th>{{ i.outcomeTotal }}</th>
+	<th>{{ i.drugA_Judgment }}</th>
+	<th>{{ i.drugB_Judgment }}</th>
+	<th>{{ i.drugA_Name }}</th>
+	<th>{{ i.drugB_Name }}</th>
 	<th>{{ i.judgmentNumber }}</th>
 
 
