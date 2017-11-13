@@ -99,302 +99,302 @@
 
 <script>
 
-// $(document).ready(function(){
+$(document).ready(function(){
 
 
 // don't forget to randomize placement!
     // left or right
     // drug name with color
 
-var main = {
-    // main should be the overall page function, data, etc.
+    var main = {
+        // main should be the overall page function, data, etc.
 
-    init: function(){
-        this.drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
-        this.drugs = {{drugs}}
+        init: function(){
+            this.drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
+            this.drugs = {{drugs}}
 
-        this.drugA_Name = String(this.drugNames[this.drugs[0]])
-        this.drugB_Name = String(this.drugNames[this.drugs[1]])
-        
-        main.colors = {{drugColors}} // this is the order from the backend, something like [3,1]
-
-        main.drugColors = ['/static/images/LightBlue.png', 
-            '/static/images/DarkBlue.png',
-            '/static/images/Orange.png',
-            '/static/images/Purple.png']
-        
-        main.drugA_color = String(main.drugColors[main.colors[0]])
-        main.drugB_color = String(main.drugColors[main.colors[1]])
-
-        main.position = {{position}} 
-        // main.position = 0 // testing
-        // if main.position = 0, drug A was the most common drug
-        // if main.position = 1, drug B was the most common drug
-
-        // main.position is complicated...In both of the data files, 0 is the most common drug ID (Drug A). If main.position is zero, 1 becomes the most common drug ID in the data. Either way, we think of "Drug A" as the common drug, in keeping with "Group A" in the literature. What I've done here (might be a mistake, because it's a little confusing) is to always call the drug on the left side of the screen "Drug A". So Drug A here (and in the TBT scenario page) is just the drug that was on the left, NOT the most common drug. If main.position = 0, the drug on the left is more common. If main.position = 1, the drug on the right is more common. 
-
-        // variables
-        // main.paradigmData = {{paradigmData}}
-        // main.groupData = {{groupData}} // 0 is A, 1 is B
-        // main.trialNumber = 0
-        // main.assets = 100+main.paradigmData[main.trialNumber]
-        // main.accuracyBonus = 0
-        // main.guesses = new Array()
-        // main.attentionFails = 0 // resets every trial
-        
-        // cache DOM
-        this.cacheDOM()
-        this.render()
-        this.bindEvents(main.drugA_Name, main.drugB_Name) // for the tooltips, it's important that this happens AFTER the render. Not sure why.
-        
-
-    },
-
-    cacheDOM: function(){   
-        this.$co = $('#containerDiv') // container div
-        this.$drugA_Spans = this.$co.find('span[name=drugA_Name]')
-        this.$drugB_Spans = this.$co.find('span[name=drugB_Name]')
-
-        this.$nextButton = this.$co.find('#nextButton')
-        
-
-        main.$leftDrugNameInput = main.$co.find('#leftDrugNameInput')
-        main.$rightDrugNameInput = main.$co.find('#rightDrugNameInput')
-        main.$commonDrugInput = main.$co.find('#commonDrugInput')
-        main.$leftDrugColorInput = main.$co.find('#leftDrugColorInput')
-        main.$rightDrugColorInput = main.$co.find('#rightDrugColorInput')
-        main.$judgmentInput = main.$co.find('#judgmentInput')
-
-        this.$strengthSlider = this.$co.find('#strengthSlider')
-       
-
-        this.$drugA_Image = this.$co.find('#drugA_Image')
-        this.$drugB_Image = this.$co.find('#drugB_Image')
-
-        this.$dataform = this.$co.find('#dataform')
-
-
-
-
-        this.$drugA_Total = this.$co.find('#drugA_Total')
-        this.$drugB_Total = this.$co.find('#drugB_Total')
-
-        this.$drugA_Button = this.$co.find('#drugA_Button')
-        this.$drugB_Button = this.$co.find('#drugB_Button')
-
-        this.$drugA_textInput = this.$co.find('#drugA_textInput')
-        this.$drugB_textInput = this.$co.find('#drugB_textInput')
-
-
-    },
-
-    render: function(){
-        main.$drugA_Spans.text(String(main.drugA_Name))
-        main.$drugB_Spans.text(String(main.drugB_Name))
-
-        main.$drugA_Image.attr('src', main.drugA_color)
-        main.$drugB_Image.attr('src', main.drugB_color)
-
-        main.$co.show()
-        
-    },
-
-
-    bindEvents: function(leftName, rightName){
-
-        // click div, show button
-        // main.$drugA_Slider_Div.unbind().on('click', main.enableDrugA_Button)
-        // main.$drugB_Slider_Div.unbind().on('click', main.enableDrugB_Button)
-
-        // buttons
-        main.$nextButton.on('click', main.mySubmit)
-
-        // sliders
-        $('#strengthSlider').slider({
-            formatter: function(value) {
-                if(value < 4){
-                    return leftName+' is much worse'    
-                }else if(value < 10){
-                    return leftName+' is worse'    
-                }else if(value == 10){
-                    return 'They have equal outcomes'
-                }else if(value > 16){
-                    return rightName+' is much worse'
-                }else{
-                    return rightName +' is worse'
-                }
-                
-            }
-        });
-    },
-
-    getTrialStartTime: function(){
-        var trialDate = new Date()
-        main.trialStartTime = trialDate.getTime()
-    },
-
-    enableDrugA_Button: function(){
-        main.$drugA_Button.css('visibility', 'visible')
-    },
-
-    enableDrugB_Button: function(){
-        main.$drugB_Button.css('visibility', 'visible')
-    },
-
-    initializeSlider: function(object, number){
-        object.slider({
-            formatter: function(value) {
-                return value+'/'+number+' BAD outcomes';
-            }
-        });
-    },
-
-    sendAjax: function(progress, drug, max, value){
-        
-        // if(drug == 'A'){
-        //     if(main.position == 0){
-        //         $('#drugInput').val('Common')
-        //         console.log('Common Drug (Left)')
-                
-        //     }else{
-        //         $('#drugInput').val('Rare')
-        //         console.log('Rare Drug (Left)')
-                
-        //     }
-        //     var color = main.drugA_color
-        //     var drugName = main.drugA_Name
-
-        // }else if(drug == 'B'){
-        //     if(main.position == 0){
-        //         $('#drugInput').val('Rare')
-        //         console.log('Rare Drug (Right)')
-                
-        //     }else{
-        //         $('#drugInput').val('Common')
-        //         console.log('Common Drug (Right)')
-                
-        //     }
-        //     var color = main.drugB_color
-        //     var drugName = main.drugB_Name
-        //     // alert('send Ajax function, drug '+String(drug)+ ' is '+String(value))
-        // }
-
-        // console.log('Judgment number: '+String(main.progress+1))
-        // console.log('Drug Name: '+String(drugName))
-        // console.log('Judgment: '+String(value))
-
-        // if(color == '/static/images/DarkBlue.png'){
-        //     console.log('Color: Dark Blue')
-        // }else if(color == '/static/images/LightBlue.png'){
-        //     console.log('Color: Light Blue')
-        // }else if(color == '/static/images/Orange.png'){
-        //     console.log('Color: Orange')
-        // }else if(color == '/static/images/Purple.png'){
-        //     console.log('Color: Purple')
-        // }
-        
-        // $('#drugNameInput').val(drugName)
-        // $('#drugColorInput').val(color)
-        // $('#judgmentInput').val(value)
-        // $('#judgmentNumberInput').val(main.progress+1)
-
-            // <input id="drugInput" name="drugInput" type="hidden"> <!-- common or rare -->
-            // <input id="drugNameInput" name="drugNameInput" type="hidden">
-            // <input id="drugColorInput" name="drugColorInput" type="hidden">
-            // <input id="judgmentInput" name="judgmentInput" type="hidden"> <!-- out of 100 -->
-            // <input id="judgmentNumberInput" name="judgmentNumberInput" type="hidden"> <!-- 1st or second -->
-        // send to back end with ajax
-        $.ajax({
-         url:"/AjaxTest",
-         data: main.$dataform.serialize(),
-         dataType: 'json',
-         type: "POST",
-         cache: false,
-         // error: function() {alert("Error")},
-         // success: function() {alert("Success")}
-        });
-    },
-
-    mySubmit: function(){
-        var value = main.$strengthSlider.val()
-
-        // get names and colors of the left and right drugs, whether they're common or rare (sanity check to get all of them)
-
-        // get color strings:
-        var leftColor = String(main.drugA_color).split('/')
-        var leftColor = leftColor[leftColor.length-1].split('.')[0]
-
-        var rightColor = String(main.drugB_color).split('/')
-        var rightColor = rightColor[rightColor.length-1].split('.')[0]  
+            this.drugA_Name = String(this.drugNames[this.drugs[0]])
+            this.drugB_Name = String(this.drugNames[this.drugs[1]])
             
-        // main.position tells us if left (0) or right (1) drug was more common in the scenario
-        if(main.position == 0){
-            console.log('Left Drug Name: '+String(main.drugA_Name)+' (common drug)')
-            console.log('Right Drug Name: '+String(main.drugB_Name)+' (rare drug)')    
-        }else{
-            console.log('Left Drug Name: '+String(main.drugA_Name)+' (rare drug)')
-            console.log('Right Drug Name: '+String(main.drugB_Name)+' (common drug)')
+            main.colors = {{drugColors}} // this is the order from the backend, something like [3,1]
+
+            main.drugColors = ['/static/images/LightBlue.png', 
+                '/static/images/DarkBlue.png',
+                '/static/images/Orange.png',
+                '/static/images/Purple.png']
+            
+            main.drugA_color = String(main.drugColors[main.colors[0]])
+            main.drugB_color = String(main.drugColors[main.colors[1]])
+
+            main.position = {{position}} 
+            // main.position = 0 // testing
+            // if main.position = 0, drug A was the most common drug
+            // if main.position = 1, drug B was the most common drug
+
+            // main.position is complicated...In both of the data files, 0 is the most common drug ID (Drug A). If main.position is zero, 1 becomes the most common drug ID in the data. Either way, we think of "Drug A" as the common drug, in keeping with "Group A" in the literature. What I've done here (might be a mistake, because it's a little confusing) is to always call the drug on the left side of the screen "Drug A". So Drug A here (and in the TBT scenario page) is just the drug that was on the left, NOT the most common drug. If main.position = 0, the drug on the left is more common. If main.position = 1, the drug on the right is more common. 
+
+            // variables
+            // main.paradigmData = {{paradigmData}}
+            // main.groupData = {{groupData}} // 0 is A, 1 is B
+            // main.trialNumber = 0
+            // main.assets = 100+main.paradigmData[main.trialNumber]
+            // main.accuracyBonus = 0
+            // main.guesses = new Array()
+            // main.attentionFails = 0 // resets every trial
+            
+            // cache DOM
+            this.cacheDOM()
+            this.render()
+            this.bindEvents(main.drugA_Name, main.drugB_Name) // for the tooltips, it's important that this happens AFTER the render. Not sure why.
+            
+
+        },
+
+        cacheDOM: function(){   
+            this.$co = $('#containerDiv') // container div
+            this.$drugA_Spans = this.$co.find('span[name=drugA_Name]')
+            this.$drugB_Spans = this.$co.find('span[name=drugB_Name]')
+
+            this.$nextButton = this.$co.find('#nextButton')
+            
+
+            main.$leftDrugNameInput = main.$co.find('#leftDrugNameInput')
+            main.$rightDrugNameInput = main.$co.find('#rightDrugNameInput')
+            main.$commonDrugInput = main.$co.find('#commonDrugInput')
+            main.$leftDrugColorInput = main.$co.find('#leftDrugColorInput')
+            main.$rightDrugColorInput = main.$co.find('#rightDrugColorInput')
+            main.$judgmentInput = main.$co.find('#judgmentInput')
+
+            this.$strengthSlider = this.$co.find('#strengthSlider')
+           
+
+            this.$drugA_Image = this.$co.find('#drugA_Image')
+            this.$drugB_Image = this.$co.find('#drugB_Image')
+
+            this.$dataform = this.$co.find('#dataform')
+
+
+
+
+            this.$drugA_Total = this.$co.find('#drugA_Total')
+            this.$drugB_Total = this.$co.find('#drugB_Total')
+
+            this.$drugA_Button = this.$co.find('#drugA_Button')
+            this.$drugB_Button = this.$co.find('#drugB_Button')
+
+            this.$drugA_textInput = this.$co.find('#drugA_textInput')
+            this.$drugB_textInput = this.$co.find('#drugB_textInput')
+
+
+        },
+
+        render: function(){
+            main.$drugA_Spans.text(String(main.drugA_Name))
+            main.$drugB_Spans.text(String(main.drugB_Name))
+
+            main.$drugA_Image.attr('src', main.drugA_color)
+            main.$drugB_Image.attr('src', main.drugB_color)
+
+            main.$co.show()
+            
+        },
+
+
+        bindEvents: function(leftName, rightName){
+
+            // click div, show button
+            // main.$drugA_Slider_Div.unbind().on('click', main.enableDrugA_Button)
+            // main.$drugB_Slider_Div.unbind().on('click', main.enableDrugB_Button)
+
+            // buttons
+            main.$nextButton.on('click', main.mySubmit)
+
+            // sliders
+            $('#strengthSlider').slider({
+                formatter: function(value) {
+                    if(value < 4){
+                        return leftName+' is much worse'    
+                    }else if(value < 10){
+                        return leftName+' is worse'    
+                    }else if(value == 10){
+                        return 'They have equal outcomes'
+                    }else if(value > 16){
+                        return rightName+' is much worse'
+                    }else{
+                        return rightName +' is worse'
+                    }
+                    
+                }
+            });
+        },
+
+        getTrialStartTime: function(){
+            var trialDate = new Date()
+            main.trialStartTime = trialDate.getTime()
+        },
+
+        enableDrugA_Button: function(){
+            main.$drugA_Button.css('visibility', 'visible')
+        },
+
+        enableDrugB_Button: function(){
+            main.$drugB_Button.css('visibility', 'visible')
+        },
+
+        initializeSlider: function(object, number){
+            object.slider({
+                formatter: function(value) {
+                    return value+'/'+number+' BAD outcomes';
+                }
+            });
+        },
+
+        sendAjax: function(progress, drug, max, value){
+            
+            // if(drug == 'A'){
+            //     if(main.position == 0){
+            //         $('#drugInput').val('Common')
+            //         console.log('Common Drug (Left)')
+                    
+            //     }else{
+            //         $('#drugInput').val('Rare')
+            //         console.log('Rare Drug (Left)')
+                    
+            //     }
+            //     var color = main.drugA_color
+            //     var drugName = main.drugA_Name
+
+            // }else if(drug == 'B'){
+            //     if(main.position == 0){
+            //         $('#drugInput').val('Rare')
+            //         console.log('Rare Drug (Right)')
+                    
+            //     }else{
+            //         $('#drugInput').val('Common')
+            //         console.log('Common Drug (Right)')
+                    
+            //     }
+            //     var color = main.drugB_color
+            //     var drugName = main.drugB_Name
+            //     // alert('send Ajax function, drug '+String(drug)+ ' is '+String(value))
+            // }
+
+            // console.log('Judgment number: '+String(main.progress+1))
+            // console.log('Drug Name: '+String(drugName))
+            // console.log('Judgment: '+String(value))
+
+            // if(color == '/static/images/DarkBlue.png'){
+            //     console.log('Color: Dark Blue')
+            // }else if(color == '/static/images/LightBlue.png'){
+            //     console.log('Color: Light Blue')
+            // }else if(color == '/static/images/Orange.png'){
+            //     console.log('Color: Orange')
+            // }else if(color == '/static/images/Purple.png'){
+            //     console.log('Color: Purple')
+            // }
+            
+            // $('#drugNameInput').val(drugName)
+            // $('#drugColorInput').val(color)
+            // $('#judgmentInput').val(value)
+            // $('#judgmentNumberInput').val(main.progress+1)
+
+                // <input id="drugInput" name="drugInput" type="hidden"> <!-- common or rare -->
+                // <input id="drugNameInput" name="drugNameInput" type="hidden">
+                // <input id="drugColorInput" name="drugColorInput" type="hidden">
+                // <input id="judgmentInput" name="judgmentInput" type="hidden"> <!-- out of 100 -->
+                // <input id="judgmentNumberInput" name="judgmentNumberInput" type="hidden"> <!-- 1st or second -->
+            // send to back end with ajax
+            $.ajax({
+             url:"/AjaxTest",
+             data: main.$dataform.serialize(),
+             dataType: 'json',
+             type: "POST",
+             cache: false,
+             // error: function() {alert("Error")},
+             // success: function() {alert("Success")}
+            });
+        },
+
+        mySubmit: function(){
+            var value = main.$strengthSlider.val()
+
+            // get names and colors of the left and right drugs, whether they're common or rare (sanity check to get all of them)
+
+            // get color strings:
+            var leftColor = String(main.drugA_color).split('/')
+            var leftColor = leftColor[leftColor.length-1].split('.')[0]
+
+            var rightColor = String(main.drugB_color).split('/')
+            var rightColor = rightColor[rightColor.length-1].split('.')[0]  
+                
+            // main.position tells us if left (0) or right (1) drug was more common in the scenario
+            if(main.position == 0){
+                console.log('Left Drug Name: '+String(main.drugA_Name)+' (common drug)')
+                console.log('Right Drug Name: '+String(main.drugB_Name)+' (rare drug)')    
+            }else{
+                console.log('Left Drug Name: '+String(main.drugA_Name)+' (rare drug)')
+                console.log('Right Drug Name: '+String(main.drugB_Name)+' (common drug)')
+            }
+            
+            
+            console.log('Left Color: '+leftColor)
+            console.log('Right Color: '+rightColor)
+
+            console.log('Judgment: '+value)
+            console.log('submitting form!')
+            
+
+            // fill form inputs
+            main.$leftDrugNameInput.val(main.drugA_Name)
+            main.$rightDrugNameInput.val(main.drugB_Name)
+            
+            if(main.position == 0){
+                main.$commonDrugInput.val('Left')    
+            }else{
+                main.$commonDrugInput.val('Right')    
+            }
+            
+            main.$leftDrugColorInput.val(leftColor)
+            main.$rightDrugColorInput.val(rightColor)
+            main.$judgmentInput.val(value)
+            
+
+            $.ajax({
+             url:"/AjaxCausalTest",
+             data: main.$dataform.serialize(),
+             dataType: 'json',
+             type: "POST",
+             cache: false,
+             // error: function() {alert("Error")},
+             // success: function() {alert("Success")}
+            });
+
+
+            if({{testOrder}} == 0){
+                $('#submitFormOrderZero').submit()       
+            }else{
+                $('#submitFormOrderOne').submit()       
+            }
+            
+        },
+
+        startTimer: function(){
+            start = new Date();
+            return start.getTime(); 
         }
-        
-        
-        console.log('Left Color: '+leftColor)
-        console.log('Right Color: '+rightColor)
-
-        console.log('Judgment: '+value)
-        console.log('submitting form!')
-        
-
-        // fill form inputs
-        main.$leftDrugNameInput.val(main.drugA_Name)
-        main.$rightDrugNameInput.val(main.drugB_Name)
-        
-        if(main.position == 0){
-            main.$commonDrugInput.val('Left')    
-        }else{
-            main.$commonDrugInput.val('Right')    
-        }
-        
-        main.$leftDrugColorInput.val(leftColor)
-        main.$rightDrugColorInput.val(rightColor)
-        main.$judgmentInput.val(value)
-        
-
-        $.ajax({
-         url:"/AjaxCausalTest",
-         data: main.$dataform.serialize(),
-         dataType: 'json',
-         type: "POST",
-         cache: false,
-         // error: function() {alert("Error")},
-         // success: function() {alert("Success")}
-        });
-
-
-        if({{testOrder}} == 0){
-            $('#submitFormOrderZero').submit()       
-        }else{
-            $('#submitFormOrderOne').submit()       
-        }
-        
-    },
-
-    startTimer: function(){
-        start = new Date();
-        return start.getTime(); 
+            
     }
-        
-}
 
 
 
 
 
 
-main.init()
+    main.init()
 
 
 
 
-// })
+})
  </script>
 {% endblock %}
