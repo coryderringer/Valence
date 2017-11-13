@@ -355,6 +355,9 @@ $(document).ready(function(){
             this.$left_GB_Button = this.$co.find('#left_GB_Button')
             this.$right_GB_Button = this.$co.find('#right_GB_Button')
 
+            this.$left_GB_Image = this.$co.find('#left_GB_Image')
+            this.$right_GB_Image = this.$co.find('#right_GB_Image')
+
             this.$right_GB_drugA_Input = this.$co.find("#right_GB_drugA_Input")
             this.$right_GB_drugB_Input = this.$co.find("#right_GB_drugB_Input")
             this.$left_GB_drugA_Input = this.$co.find("#left_GB_drugA_Input")
@@ -377,15 +380,19 @@ $(document).ready(function(){
             if({{faces}} == 0){ // good on left
                 main.$left_GB_Total.text(main.goodOutcomes)
                 main.$left_GB_Label.text('good')
+                main.$left_GB_Image.attr('src', '/static/images/good.png')
 
                 main.$right_GB_Total.text(main.badOutcomes)
                 main.$right_GB_Label.text('bad')
+                main.$right_GB_Image.attr('src', '/static/images/bad.png')
             }else{
                 main.$left_GB_Total.text(main.badOutcomes)
                 main.$left_GB_Label.text('bad')
+                main.$left_GB_Image.attr('src', '/static/images/bad.png')
 
                 main.$right_GB_Total.text(main.goodOutcomes)
                 main.$right_GB_Label.text('good')
+                main.$right_GB_Image.attr('src', '/static/images/good.png')
             }
 
             
