@@ -19,12 +19,26 @@
     <div id="containerDiv" style="width:700px; display: none" class="container well">
     	<h2>Scenarios:</h2>
 
-    	<p>You will complete two scenarios, each about a different disease. The diseases are unrelated. In the first scenario, you will view data about the disease <span id="disease"></span>, which is <b><span id="freq1">often</span> treated with <span id="drug1"></span>, but is <span id="freq2">sometimes</span> treated with <span id="drug2"></span></b>. Most patients have <span id="outcome"></span> treatment outcomes for this disease. Click below to begin the experiment.</p>
+    	<p>You will complete two scenarios, each about a different disease. The diseases are unrelated. In the first scenario, you will view data about the disease <span name="disease"></span>, which is <b><span id="freq1">often</span> treated with <span name="drugA_Name"></span>, but is <span id="freq2">sometimes</span> treated with <span name="drugB_Name"></span></b>. Most patients have <span id="outcome"></span> treatment outcomes for this disease.</p>
+        <br>
+        <div id="causeDiv" class = "text-center">
+            <p id="causePrompt">To begin, click the drug below that is <b>more often</b> used to treat <span name="disease"></span>.</p> 
+            <div class = "row" id="pillDiv" style="height:75px"> 
+                <div id="drugA" class="col-xs-5 text-center">
+                    <p><span name="drugA_Name">Drug A</span></p>
+                    <img id="leftDrug" src="/static/images/LightBlue.png" style="width:100px"/>
+                </div>
+                <div class = "col-xs-2 text-center">
+                    <div style="height:10px"></div>
+                    <div id="feedbackDiv" class="text-center" style="font-size: 10pt; padding:0px; height:75px"></div>
+                </div>
+                <div id="drugB" class="col-xs-5 text-center">
+                    <p><span name="drugB_Name">Drug B</span></p>
+                    <img id="rightDrug" src="/static/images/DarkBlue.png" style="width:100px"/>
+                </div>
+            </div>
+        </div>
 
-    	<button class="btn btn-info" onclick="submit()">
-    		Begin Experiment
-    	</button>
-	
     </div>
     <form id="submitForm" method="get" action="/scenario" class="hidden">
     	<input type="submit" value="" class="hidden"/>
@@ -38,35 +52,93 @@
 
 <script>
 
-function submit(){
-	$('#submitForm').submit()   
-}
+
 
 $(document).ready(function(){
 
-	var drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
-	var drugs = {{drugs}}
+    var main = {
 
-    var position = {{position}}
-    console.log(position)
+        init: function(){
+            this.drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
+            this.drugs = {{drugs}}
+            
+            this.colors = {{drugColors}}
+            
+            main.drugColors = ['/static/images/LightBlue.png', 
+                '/static/images/DarkBlue.png',
+                '/static/images/Orange.png',
+                '/static/images/Purple.png']
+
+            this.leftColor = String(main.drugColors[main.colors[0]])
+            this.rightColor = String(main.drugColors[main.colors[1]])
+
+            this.position = {{position}}
+            
+            this.condition = '{{condition}}'
+
+            if(main.position === 1){ // switch rarity
+                $('#freq1').text('sometimes')
+                $('#freq2').text('more often')
+            }    
+
+            main.cacheDOM()
+            main.render()
+            main.bindEvents()
+            $('#containerDiv').show()
+        },
+        
+        cacheDOM: function(){
+            main.$diseaseSpans = $('[name="disease"]')
+            main.$drugA_Spans = $('[name="drugA_Name"]')
+            main.$drugB_Spans = $('[name="drugB_Name"]')
+            main.$outcomeSpan = $('#outcome')
+
+            main.$leftDrug = $('#leftDrug')
+            main.$rightDrug = $('#rightDrug')
+
+            main.$drugA = $('#drugA')
+            main.$drugB = $('#drugB')
+
+            main.$submitForm = $('#submitForm')
+        },  
+
+        render: function(){
+            main.$diseaseSpans.text('{{disease}}')
+            main.$drugA_Spans.text(String(main.drugNames[main.drugs[0]]))
+            main.$drugB_Spans.text(String(main.drugNames[main.drugs[1]]))
+            
+            if(main.condition === 'negative'){
+                main.$outcomeSpan.text('GOOD')
+            }else{
+                main.$outcomeSpan.text('BAD')
+            }
+
+            main.$leftDrug.attr('src', main.leftColor)
+            main.$rightDrug.attr('src', main.rightColor)
+
+        },
+
+        bindEvents: function(){
+            if(main.position === 0){ // common on left
+                main.$drugA.unbind().on('click', function(){
+                    main.$submitForm.submit()
+                    console.log('submitting form')
+                })
+            }else if(main.position === 1){ // common on right
+                main.$drugB.unbind().on('click', function(){  
+                    main.$submitForm.submit()
+                    console.log('submitting form')
+                })
+            }
+
+            // }
+        }
+
+	}
     
+    main.init()
 
-    if(position == 1){ // switch rarity
-        $('#freq1').text('sometimes')
-        $('#freq2').text('more often')
-    }
-
-	$('#disease').text('{{disease}}')
-	$('#drug1').text(String(drugNames[drugs[0]]))
-	$('#drug2').text(String(drugNames[drugs[1]]))
     
-    if('{{condition}}' == 'negative'){
-        $('#outcome').text('GOOD')
-    }else{
-        $('#outcome').text('BAD')
-    }
-
-    $('#containerDiv').show()
 
 })
 

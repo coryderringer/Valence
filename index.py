@@ -553,6 +553,7 @@ class SecondJudgmentHandler(webapp.RequestHandler):
 			drugColors = [self.session['drugColors'][2], self.session['drugColors'][3]]
 
 		position = self.session['position'][scenario]
+		condition = self.session['conditions'][scenario]
 
 		if self.session['testOrder'] == 0:
 			# have to pass a "progress" variable into the page so it knows which handler to post
@@ -572,7 +573,7 @@ class SecondJudgmentHandler(webapp.RequestHandler):
 				'drugColors': drugColors,
 				'position': position,
 				'testOrder':self.session['testOrder'],
-				'condition':conditions,
+				'condition':condition,
 				'faces': self.session['faces'],
 				'memOrder':self.session['memOrder']})
 
@@ -600,6 +601,7 @@ class SecondJudgmentHandler(webapp.RequestHandler):
 				{'bonus':self.session['BonusOne'],
 				'disease': disease,
 				'drugs': drugs,
+				'drugColors':self.session['drugColors'],
 				'condition':condition,
 				'position': position})
 		
@@ -645,6 +647,7 @@ class preScenarioHandler(webapp.RequestHandler):
 			{'disease':disease,
 			'drugs': drugs,
 			'condition':condition,
+			'drugColors':self.session['drugColors'],
 			'position':position}) # don't need scenario, it's always 0
 
 class DataHandler(webapp.RequestHandler):

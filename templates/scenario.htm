@@ -317,7 +317,7 @@ $(document).ready(function(){
             main.$rightDrug.attr('src', main.rightColor)
 
             if(stage == 'reset'){ // new trial
-                // console.log('render reset')
+                //// console.log('render reset')
                 // Patient Number
                 
                 // remove borders from prev trial
@@ -370,7 +370,7 @@ $(document).ready(function(){
 
             }else if(stage == 'guess'){
                 
-                // console.log('render guess')
+                //// console.log('render guess')
 
                 if(main.paradigmData[main.trialNumber] > 0){ // if effective
                     main.$ineffectiveClick.css('opacity', '0.2')
@@ -387,7 +387,7 @@ $(document).ready(function(){
 
 
             }else if(stage == 'feedback'){
-                // console.log('render feedback')
+                //// console.log('render feedback')
                 main.$causePrompt.css('opacity', '0.25')
 
                 // opacity to .25 for the incorrect answer
@@ -578,18 +578,18 @@ $(document).ready(function(){
             // profit impact
             main.$profitImpactInput.val(main.paradigmData[main.trialNumber])
 
-            console.log('Sending to Ajax:')
-            console.log('total bonus: '+bonus)
-            console.log('Trial Time: '+String(main.$timeInput.val()))
-            console.log('Attention Fails: '+String(main.$attentionFailsInput.val()))
-            console.log('Trial Number: '+String(main.$trialInput.val()))
-            console.log('Guess: '+String(main.$guessInput.val()))
-            console.log('Correct Answer: '+String(main.$correctInput.val()))
-            console.log('Profit Impact: '+String(main.$profitImpactInput.val()))
+            //console.log('Sending to Ajax:')
+            //console.log('total bonus: '+bonus)
+            //console.log('Trial Time: '+String(main.$timeInput.val()))
+            //console.log('Attention Fails: '+String(main.$attentionFailsInput.val()))
+            //console.log('Trial Number: '+String(main.$trialInput.val()))
+            //console.log('Guess: '+String(main.$guessInput.val()))
+            //console.log('Correct Answer: '+String(main.$correctInput.val()))
+            //console.log('Profit Impact: '+String(main.$profitImpactInput.val()))
             // spacing
-            console.log('')
-            console.log('')
-            console.log('')
+            //console.log('')
+            //console.log('')
+            //console.log('')
 
             // send to back end with ajax
             $.ajax({

@@ -229,7 +229,7 @@ $(document).ready(function(){
             this.drugNames = ['XF702', 'BT339', 'GS596', 'PR242']
             this.drugs = {{drugs}}
             this.memOrder = {{memOrder}}
-            // this.memOrder = 1 // testing
+            // this.memOrder = 0 // testing
             this.faces = {{faces}}
 
             this.condition = '{{condition}}' // if condition is pos, pos is rare 
@@ -269,6 +269,8 @@ $(document).ready(function(){
             }else{
                 main.drugAskOrder = 1 // this asks about the right drug first (right is the most common drug if main.position == 1)
             }
+
+         
 
             // randomize order of asking (outcomes)
             if(Math.round(Math.random()) == 0){
@@ -545,8 +547,12 @@ $(document).ready(function(){
 
         drugJudgmentCheck: function(value_A, value_B, max, side){ // judgment for each drug (given outcomes)
             // makes sure there judgment is legal, returns zero if it's good
-            console.log(value_A)
-            console.log(value_B)
+            // console.log('LEFT: '+String(value_A))
+            // console.log('RIGHT: '+String(value_B))
+            // console.log('CONDITION: '+main.condition)
+            // console.log('FACES: '+{{faces}})  
+            // console.log('MAX: '+String(max))
+
             if(value_A == '' | value_B == ''){ // at least one guess missing
                 return "Please make a numeric guess about each drug!"
             }
@@ -554,30 +560,25 @@ $(document).ready(function(){
                 return 'Please make a numeric guess about each drug!'
             }
 
-            if(side == 'L'){    
-                if(({{faces}} == 0 & main.condition == 'positive') | ({{faces}} == 1 & main.condition == 'negative')){ // 16 on the left
-                    if(Number(value_A) + Number(value_B) != 16){
-                        return 'Guesses for each drug must add to 16!'
-                    }
-                }
-            }else{
-                if(({{faces}} == 0 & main.condition == 'positive') | ({{faces}} == 1 & main.condition == 'negative')){ // 16 on the left
-                    if(Number(value_A) + Number(value_B) != 32){
-                        return 'Guesses for each drug must add to 32!'
-                    }
-                }
+            
+            if(Number(value_A) + Number(value_B) != Number(max)){
+                return 'Guesses for each drug must add to '+String(max)+'!'
+                
             }
+            
             
             return 0 // no problems
         },
 
         outcomeJudgmentCheck: function(value, max, side){
             // rule out blanks and non-numbers
-            console.log(value)
-            if(value == ''){
+          
+            if(value === ''){
+                // console.log('this one')
                 return "Please make a numeric guess about the number of BAD outcomes."
                 
             }else if(Number.isInteger(Number(value)) == false){
+                // console.log(value)
                 return "Please make a numeric guess about the number of BAD outcomes."
                 
             }
@@ -592,20 +593,31 @@ $(document).ready(function(){
         },
 
         incrementJudgment: function(input){
-            // console.log(input)
-            // console.log(faceOrder)
+            // // console.log(input)
+            // // console.log(faceOrder)
             if(input == 'R'){
                 var value_A = main.$right_GB_drugA_Input.val()
                 var value_B = main.$right_GB_drugB_Input.val()
-                var max = value_A + value_B
+                
+                if({{faces}} == 0){
+                    var max = main.badOutcomes
+                }else{
+                    var max = main.goodOutcomes
+                }
+                
                 var problems = main.drugJudgmentCheck(value_A=value_A, value_B=value_B, max=max, side=input)
+            
             }else if(input == 'L'){
                 var value_A = main.$left_GB_drugA_Input.val()
                 var value_B = main.$left_GB_drugB_Input.val()
-                var max = value_A + value_B
+                if({{faces}} == 0){
+                    var max = main.goodOutcomes
+                }else{
+                    var max = main.badOutcomes
+                }
                 var problems = main.drugJudgmentCheck(value_A=value_A, value_B=value_B, max=max, side=input)        
             }else if(input == 'A'){
-                var value = Number(main.$drugA_textInput.val())
+                var value = main.$drugA_textInput.val()
                 var max = Number(main.$drugA_Total.text()) 
                 var problems = main.outcomeJudgmentCheck(value=value, max=max, side=input) 
             }else if(input == 'B'){
@@ -615,13 +627,14 @@ $(document).ready(function(){
 
             }
             
+            // console.log('PROBLEMS: '+problems)
             if(problems != 0){ // if there are problems, alert and return
                 alert(problems)
                 return
             }
 
             // if we've made it this far, the value is legit.
-            // console.log('value is '+value+', sending to Ajax function')
+            // // console.log('value is '+value+', sending to Ajax function')
             if(input == 'A' | input == 'B'){
                 main.sendAjaxOutcome(progress=main.progress, drug=input, max=max, value=value) // recalling outcome for each drug
             }else if(input == 'L' | input == 'R'){
@@ -630,13 +643,13 @@ $(document).ready(function(){
             if(main.progress < 3){
                 main.progress ++
 
-                console.log('Rendering')
+                // console.log('Rendering')
                 main.render(main.progress)
                 main.bindEvents()
 
             }else{
-                console.log('submitting form')
-                // main.mySubmit()
+                // console.log('submitting form')
+                main.mySubmit()
             }
         },
 
@@ -662,57 +675,65 @@ $(document).ready(function(){
         },
 
         sendAjaxOutcome: function(progress, drug, max, value){
-            console.log('Progress: '+progress)
-            console.log('Drug: '+drug)
-            console.log('Maximum: '+max)
-            console.log('Judgment: '+value)
+            // console.log('Progress: '+progress)
+            // console.log('Drug: '+drug)
+            // console.log('Maximum: '+max)
+            // console.log('Judgment: '+value)
             
             if(drug == 'A'){
                 if(main.position == 0){
                     $('#drugInput').val('Common')
-                    // console.log('Common Drug (Left)')
+                    // // console.log('Common Drug (Left)')
                     
                 }else{
                     $('#drugInput').val('Rare')
-                    // console.log('Rare Drug (Left)')
+                    // // console.log('Rare Drug (Left)')
                     
                 }
-                var color = main.drugA_color
+                // var color = main.drugA_color
+
+                var color = String(main.drugA_color).split('/')
+                color = color[color.length-1].split('.')[0]
+
                 var drugName = main.drugA_Name
 
             }else if(drug == 'B'){
                 if(main.position == 0){
                     $('#drugInput').val('Rare')
-                    // console.log('Rare Drug (Right)')
+                    // // console.log('Rare Drug (Right)')
                     
                 }else{
                     $('#drugInput').val('Common')
-                    // console.log('Common Drug (Right)')
+                    // // console.log('Common Drug (Right)')
                     
                 }
-                var color = main.drugB_color
+                // var color = main.drugB_color
+
+                var color = String(main.drugA_color).split('/')
+                color = color[color.length-1].split('.')[0]
+
                 var drugName = main.drugB_Name
                 // alert('send Ajax function, drug '+String(drug)+ ' is '+String(value))
             }
 
-            // console.log('Judgment number: '+String(main.progress+1))
-            // console.log('Drug Name: '+String(drugName))
-            // console.log('Judgment: '+String(value))
+            // // console.log('Judgment number: '+String(main.progress+1))
+            // // console.log('Drug Name: '+String(drugName))
+            // // console.log('Judgment: '+String(value))
 
             if(color == '/static/images/DarkBlue.png'){
-                // console.log('Color: Dark Blue')
+                // // console.log('Color: Dark Blue')
             }else if(color == '/static/images/LightBlue.png'){
-                // console.log('Color: Light Blue')
+                // // console.log('Color: Light Blue')
             }else if(color == '/static/images/Orange.png'){
-                // console.log('Color: Orange')
+                // // console.log('Color: Orange')
             }else if(color == '/static/images/Purple.png'){
-                // console.log('Color: Purple')
+                // // console.log('Color: Purple')
             }
             
             $('#drugNameInput').val(drugName)
             $('#drugColorInput').val(color)
             $('#judgmentInput').val(value)
-            console.log($('#judgmentInput').val())
+            // console.log($('#judgmentInput').val())
             // $('#judgmentInput').val(0) // testing
             $('#judgmentNumberInput').val(main.progress+1)
 
@@ -734,10 +755,10 @@ $(document).ready(function(){
         },
 
         sendAjaxDrug: function(progress, outcome, value_A, value_B){
-            console.log('Progress: '+progress)
-            console.log('Outcome: '+outcome)
-            console.log('Value A: '+value_A)
-            console.log('Value B: '+value_B)
+            // console.log('Progress: '+progress)
+            // console.log('Outcome: '+outcome)
+            // console.log('Value A: '+value_A)
+            // console.log('Value B: '+value_B)
             
             $('#drugA_JudgmentInput').val(value_A)
             $('#drugB_JudgmentInput').val(value_B)
@@ -774,8 +795,8 @@ $(document).ready(function(){
              dataType: 'json',
              type: "POST",
              cache: false,
-             error: function() {alert("Error")},
-             success: function() {alert("Success")}
+             // error: function() {alert("Error")},
+             // success: function() {alert("Success")}
             });
 
 
