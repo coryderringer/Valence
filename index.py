@@ -738,7 +738,7 @@ class DataHandler(webapp.RequestHandler):
 
 	
 		if password == "gZ2BYJxfCY5SiyttS8zl":
-		# if password == "":
+		# if password == "": # testing
 
 			que=db.Query(ScenarioData)
 			que.order("usernum").order("scenario").order("trialNumber")

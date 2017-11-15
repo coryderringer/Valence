@@ -212,7 +212,7 @@
 
 <script>
 
-// $(document).ready(function(){
+$(document).ready(function(){
 
 
 // just changed id pictures to name pictures, need to make corresponding changes
@@ -625,86 +625,6 @@
             });
         },
 
-        // loadForm: function(progress, drug, max, value){
-        //     // console.log('Progress: '+progress)
-        //     // console.log('Drug: '+drug)
-        //     // console.log('Maximum: '+max)
-        //     // console.log('Judgment: '+value)
-            
-        //     if(drug == 'A'){
-        //         if(main.position == 0){
-        //             $('#drugInput').val('Common')
-        //             // // console.log('Common Drug (Left)')
-                    
-        //         }else{
-        //             $('#drugInput').val('Rare')
-        //             // // console.log('Rare Drug (Left)')
-                    
-        //         }
-        //         // var color = main.drugA_color
-
-        //         var color = String(main.drugA_color).split('/')
-        //         color = color[color.length-1].split('.')[0]
-
-        //         var drugName = main.drugA_Name
-
-        //     }else if(drug == 'B'){
-        //         if(main.position == 0){
-        //             $('#drugInput').val('Rare')
-        //             // // console.log('Rare Drug (Right)')
-                    
-        //         }else{
-        //             $('#drugInput').val('Common')
-        //             // // console.log('Common Drug (Right)')
-                    
-        //         }
-        //         // var color = main.drugB_color
-
-        //         var color = String(main.drugB_color).split('/')
-        //         color = color[color.length-1].split('.')[0]
-
-        //         var drugName = main.drugB_Name
-        //         // alert('send Ajax function, drug '+String(drug)+ ' is '+String(value))
-        //     }
-
-        //     // // console.log('Judgment number: '+String(main.progress+1))
-        //     // // console.log('Drug Name: '+String(drugName))
-        //     // // console.log('Judgment: '+String(value))
-
-        //     if(color == '/static/images/DarkBlue.png'){
-        //         // // console.log('Color: Dark Blue')
-        //     }else if(color == '/static/images/LightBlue.png'){
-        //         // // console.log('Color: Light Blue')
-        //     }else if(color == '/static/images/Orange.png'){
-        //         // // console.log('Color: Orange')
-        //     }else if(color == '/static/images/Purple.png'){
-        //         // // console.log('Color: Purple')
-        //     }
-            
-        //     $('#drugNameInput').val(drugName)
-        //     $('#drugColorInput').val(color)
-        //     $('#judgmentInput').val(value)
-        //     // console.log($('#judgmentInput').val())
-        //     // $('#judgmentInput').val(0) // testing
-        //     $('#judgmentNumberInput').val(main.progress+1)
-
-        
-        //     // send to back end with ajax
-
-        //     $.ajax({
-        //      url:"/AjaxOutcomeMemoryTest",
-        //      data: main.$dataform1.serialize(),
-        //      // data: $('#dataform1').serialize(),
-        //      dataType: 'json',
-        //      type: "POST",
-        //      cache: false,
-        //      // error: function() {alert("Error")},
-        //      // success: function() {alert("Success")}
-        //     });
-
-
-        // },
-
         loadForm: function(){
             $("#condition").val('{{condition}}')
             $("#leftDrugName").val(main.drugA_Name)
@@ -741,26 +661,24 @@
                 $("#badOutcomesRight").val($('#left_GB_drugB_Input').val())
             }
 
-
-
         },
 
         sendAjax: function(){
-            console.log("condition: "+$('#condition').val())
-            console.log("leftDrugName: "+$('#leftDrugName').val())
-            console.log("rightDrugName: "+$('#rightDrugName').val())
-            console.log("leftDrugRarity: "+$('#leftDrugRarity').val())
-            console.log("rightDrugRarity: "+$('#rightDrugRarity').val())
-            console.log("leftDrugColor: "+$('#leftDrugColor').val())
-            console.log("rightDrugColor: "+$('#rightDrugColor').val())
-            console.log("leftNumberBad: "+$('#leftNumberBad').val())
-            console.log("rightNumberBad: "+$('#rightNumberBad').val())
-            console.log("goodOutcomesLeft: "+$('#goodOutcomesLeft').val())
-            console.log("goodOutcomesRight: "+$('#goodOutcomesRight').val())
-            console.log("badOutcomesLeft: "+$('#badOutcomesLeft').val())
-            console.log("badOutcomesRight: "+$('#badOutcomesRight').val())
-            console.log("causalJudgment: "+$('#causalJudgment').val())
-            console.log("judgmentOrder: "+$('#judgmentOrder').val())
+            // console.log("condition: "+$('#condition').val())
+            // console.log("leftDrugName: "+$('#leftDrugName').val())
+            // console.log("rightDrugName: "+$('#rightDrugName').val())
+            // console.log("leftDrugRarity: "+$('#leftDrugRarity').val())
+            // console.log("rightDrugRarity: "+$('#rightDrugRarity').val())
+            // console.log("leftDrugColor: "+$('#leftDrugColor').val())
+            // console.log("rightDrugColor: "+$('#rightDrugColor').val())
+            // console.log("leftNumberBad: "+$('#leftNumberBad').val())
+            // console.log("rightNumberBad: "+$('#rightNumberBad').val())
+            // console.log("goodOutcomesLeft: "+$('#goodOutcomesLeft').val())
+            // console.log("goodOutcomesRight: "+$('#goodOutcomesRight').val())
+            // console.log("badOutcomesLeft: "+$('#badOutcomesLeft').val())
+            // console.log("badOutcomesRight: "+$('#badOutcomesRight').val())
+            // console.log("causalJudgment: "+$('#causalJudgment').val())
+            // console.log("judgmentOrder: "+$('#judgmentOrder').val())
             
 
             $.ajax({
@@ -801,6 +719,6 @@
 
 
 
-// })
+})
  </script>
 {% endblock %}
