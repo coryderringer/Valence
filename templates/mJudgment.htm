@@ -170,26 +170,25 @@
         
 
             <!-- ajax form to send tbt data to datastore -->
-            <form id="dataform1" method="post" action="/AjaxOutcomeMemoryTest" style="display:none">
-                <input id="drugInput" name="drugInput" type="hidden"> <!-- common or rare -->
-                <input id="drugNameInput" name="drugNameInput" type="hidden">
-                <input id="drugColorInput" name="drugColorInput" type="hidden">
-                <input id="judgmentInput" name="judgmentInput" type="hidden"> 
-                <input id="judgmentNumberInput" name="judgmentNumberInput" type="hidden"> <!-- 1st or second -->
-                    <!-- data[13] -->
+            <form id="dataform" method="post" action="/AjaxOutcomeMemoryTest" style="display:none">
+            
+                <input id="condition" name="condition" type="hidden">
+                <input id="leftDrugName" name="leftDrugName" type="hidden">
+                <input id="rightDrugName" name="rightDrugName" type="hidden">
+                <input id="leftDrugRarity" name="leftDrugRarity" type="hidden">
+                <input id="rightDrugRarity" name="rightDrugRarity" type="hidden">
+                <input id="leftDrugColor" name="leftDrugColor" type="hidden">
+                <input id="rightDrugColor" name="rightDrugColor" type="hidden">
+                <input id="leftNumberBad" name="leftNumberBad" type="hidden">
+                <input id="rightNumberBad" name="rightNumberBad" type="hidden">
+                <input id="goodOutcomesLeft" name="goodOutcomesLeft" type="hidden">
+                <input id="goodOutcomesRight" name="goodOutcomesRight" type="hidden">
+                <input id="badOutcomesLeft" name="badOutcomesLeft" type="hidden">
+                <input id="badOutcomesRight" name="badOutcomesRight" type="hidden">
+                <input id="causalJudgment" name="causalJudgment" type="hidden">
+                <input id="judgmentOrder" name= "judgmentOrder" type="hidden">
                 <input id="Submit" onclick="mySubmit()" value="Submit">
-            </form>
-
-            <form id="dataform2" method="post" action="/AjaxDrugMemoryTest" style="display:none">
-                <input id="outcomeInput" name="outcomeInput" type="hidden"> <!--  -->
-                <input id="outcomeTotalInput" name="outcomeTotalInput" type="hidden"> <!--  -->
-                <input id="drugA_JudgmentInput" name="drugA_JudgmentInput" type="hidden"> 
-                <input id="drugB_JudgmentInput" name="drugB_JudgmentInput" type="hidden">
-                <input id="drugA_NameInput" name="drugA_NameInput" type="hidden">
-                <input id="drugB_NameInput" name="drugB_NameInput" type="hidden">
-                <input id="judgmentNumberInput2" name="judgmentNumberInput2" type="hidden"> <!-- 1st or second -->
-                    <!-- data[13] -->
-                <input id="Submit" onclick="mySubmit()" value="Submit">
+            
             </form>
 
             <!-- form to advance to scenario -->
@@ -213,7 +212,7 @@
 
 <script>
 
-$(document).ready(function(){
+// $(document).ready(function(){
 
 
 // just changed id pictures to name pictures, need to make corresponding changes
@@ -371,8 +370,7 @@ $(document).ready(function(){
             this.$left_GB_Label = this.$co.find('[name=left_GB_Label]')
             this.$right_GB_Label = this.$co.find('[name=right_GB_Label]')
 
-            this.$dataform1 = this.$co.find('#dataform1')
-            this.$dataform2 = this.$co.find('#dataform2')
+            this.$dataform = this.$co.find('#dataform')
         },
 
         render: function(progress){
@@ -496,12 +494,6 @@ $(document).ready(function(){
         },
 
         bindEvents: function(){
-
-            // click div, show button
-            // main.$drugA_Slider_Div.unbind().on('click', main.enableDrugA_Button)
-            // main.$drugB_Slider_Div.unbind().on('click', main.enableDrugB_Button)
-
-            // buttons
             main.$drugA_Button.unbind().on('click', function(){
                 main.incrementJudgment('A')
             })
@@ -518,41 +510,10 @@ $(document).ready(function(){
             })
 
 
-            // // sliders
-            // main.$drugA_Slider_Common.slider({
-            //     formatter: function(value) {
-            //         return value+ '/36 BAD outcomes';
-            //     }
-            // });
-
-            // main.$drugB_Slider_Common.slider({
-            //     formatter: function(value) {
-            //         return value+ '/36 BAD outcomes';
-            //     }
-            // });
-
-            // main.$drugA_Slider_Rare.slider({
-            //     formatter: function(value) {
-            //         return value+ '/12 BAD outcomes';
-            //     }
-            // });
-
-            // main.$drugB_Slider_Rare.slider({
-            //     formatter: function(value) {
-            //         return value+ '/12 BAD outcomes';
-            //     }
-            // });
 
         },
 
         drugJudgmentCheck: function(value_A, value_B, max, side){ // judgment for each drug (given outcomes)
-            // makes sure there judgment is legal, returns zero if it's good
-            // console.log('LEFT: '+String(value_A))
-            // console.log('RIGHT: '+String(value_B))
-            // console.log('CONDITION: '+main.condition)
-            // console.log('FACES: '+{{faces}})  
-            // console.log('MAX: '+String(max))
-
             if(value_A == '' | value_B == ''){ // at least one guess missing
                 return "Please make a numeric guess about each drug!"
             }
@@ -560,27 +521,20 @@ $(document).ready(function(){
                 return 'Please make a numeric guess about each drug!'
             }
 
-            
             if(Number(value_A) + Number(value_B) != Number(max)){
-                return 'Guesses for each drug must add to '+String(max)+'!'
-                
+                return 'Guesses for each drug must add to '+String(max)+'!'        
             }
-            
-            
+              
             return 0 // no problems
         },
 
         outcomeJudgmentCheck: function(value, max, side){
             // rule out blanks and non-numbers
-          
             if(value === ''){
-                // console.log('this one')
                 return "Please make a numeric guess about the number of BAD outcomes."
                 
             }else if(Number.isInteger(Number(value)) == false){
-                // console.log(value)
-                return "Please make a numeric guess about the number of BAD outcomes."
-                
+                return "Please make a numeric guess about the number of BAD outcomes."  
             }
 
             // rule out impossible numbers
@@ -634,12 +588,8 @@ $(document).ready(function(){
             }
 
             // if we've made it this far, the value is legit.
-            // // console.log('value is '+value+', sending to Ajax function')
-            if(input == 'A' | input == 'B'){
-                main.sendAjaxOutcome(progress=main.progress, drug=input, max=max, value=value) // recalling outcome for each drug
-            }else if(input == 'L' | input == 'R'){
-                main.sendAjaxDrug(progress=main.progress, outcome=input, value_A=value_A, value_B=value_B) // recalling drug for each outcome
-            }
+            main.loadForm()
+
             if(main.progress < 3){
                 main.progress ++
 
@@ -649,6 +599,7 @@ $(document).ready(function(){
 
             }else{
                 // console.log('submitting form')
+                main.sendAjax()
                 main.mySubmit()
             }
         },
@@ -674,132 +625,154 @@ $(document).ready(function(){
             });
         },
 
-        sendAjaxOutcome: function(progress, drug, max, value){
-            // console.log('Progress: '+progress)
-            // console.log('Drug: '+drug)
-            // console.log('Maximum: '+max)
-            // console.log('Judgment: '+value)
+        // loadForm: function(progress, drug, max, value){
+        //     // console.log('Progress: '+progress)
+        //     // console.log('Drug: '+drug)
+        //     // console.log('Maximum: '+max)
+        //     // console.log('Judgment: '+value)
             
-            if(drug == 'A'){
-                if(main.position == 0){
-                    $('#drugInput').val('Common')
-                    // // console.log('Common Drug (Left)')
+        //     if(drug == 'A'){
+        //         if(main.position == 0){
+        //             $('#drugInput').val('Common')
+        //             // // console.log('Common Drug (Left)')
                     
-                }else{
-                    $('#drugInput').val('Rare')
-                    // // console.log('Rare Drug (Left)')
+        //         }else{
+        //             $('#drugInput').val('Rare')
+        //             // // console.log('Rare Drug (Left)')
                     
-                }
-                // var color = main.drugA_color
+        //         }
+        //         // var color = main.drugA_color
 
-                var color = String(main.drugA_color).split('/')
-                color = color[color.length-1].split('.')[0]
+        //         var color = String(main.drugA_color).split('/')
+        //         color = color[color.length-1].split('.')[0]
 
-                var drugName = main.drugA_Name
+        //         var drugName = main.drugA_Name
 
-            }else if(drug == 'B'){
-                if(main.position == 0){
-                    $('#drugInput').val('Rare')
-                    // // console.log('Rare Drug (Right)')
+        //     }else if(drug == 'B'){
+        //         if(main.position == 0){
+        //             $('#drugInput').val('Rare')
+        //             // // console.log('Rare Drug (Right)')
                     
-                }else{
-                    $('#drugInput').val('Common')
-                    // // console.log('Common Drug (Right)')
+        //         }else{
+        //             $('#drugInput').val('Common')
+        //             // // console.log('Common Drug (Right)')
                     
-                }
-                // var color = main.drugB_color
+        //         }
+        //         // var color = main.drugB_color
 
-                var color = String(main.drugA_color).split('/')
-                color = color[color.length-1].split('.')[0]
+        //         var color = String(main.drugB_color).split('/')
+        //         color = color[color.length-1].split('.')[0]
 
-                var drugName = main.drugB_Name
-                // alert('send Ajax function, drug '+String(drug)+ ' is '+String(value))
-            }
+        //         var drugName = main.drugB_Name
+        //         // alert('send Ajax function, drug '+String(drug)+ ' is '+String(value))
+        //     }
 
-            // // console.log('Judgment number: '+String(main.progress+1))
-            // // console.log('Drug Name: '+String(drugName))
-            // // console.log('Judgment: '+String(value))
+        //     // // console.log('Judgment number: '+String(main.progress+1))
+        //     // // console.log('Drug Name: '+String(drugName))
+        //     // // console.log('Judgment: '+String(value))
 
-            if(color == '/static/images/DarkBlue.png'){
-                // // console.log('Color: Dark Blue')
-            }else if(color == '/static/images/LightBlue.png'){
-                // // console.log('Color: Light Blue')
-            }else if(color == '/static/images/Orange.png'){
-                // // console.log('Color: Orange')
-            }else if(color == '/static/images/Purple.png'){
-                // // console.log('Color: Purple')
-            }
+        //     if(color == '/static/images/DarkBlue.png'){
+        //         // // console.log('Color: Dark Blue')
+        //     }else if(color == '/static/images/LightBlue.png'){
+        //         // // console.log('Color: Light Blue')
+        //     }else if(color == '/static/images/Orange.png'){
+        //         // // console.log('Color: Orange')
+        //     }else if(color == '/static/images/Purple.png'){
+        //         // // console.log('Color: Purple')
+        //     }
             
-            $('#drugNameInput').val(drugName)
-            $('#drugColorInput').val(color)
-            $('#judgmentInput').val(value)
-            // console.log($('#judgmentInput').val())
-            // $('#judgmentInput').val(0) // testing
-            $('#judgmentNumberInput').val(main.progress+1)
+        //     $('#drugNameInput').val(drugName)
+        //     $('#drugColorInput').val(color)
+        //     $('#judgmentInput').val(value)
+        //     // console.log($('#judgmentInput').val())
+        //     // $('#judgmentInput').val(0) // testing
+        //     $('#judgmentNumberInput').val(main.progress+1)
 
         
-            // send to back end with ajax
+        //     // send to back end with ajax
 
-            $.ajax({
-             url:"/AjaxOutcomeMemoryTest",
-             data: main.$dataform1.serialize(),
-             // data: $('#dataform1').serialize(),
-             dataType: 'json',
-             type: "POST",
-             cache: false,
-             // error: function() {alert("Error")},
-             // success: function() {alert("Success")}
-            });
+        //     $.ajax({
+        //      url:"/AjaxOutcomeMemoryTest",
+        //      data: main.$dataform1.serialize(),
+        //      // data: $('#dataform1').serialize(),
+        //      dataType: 'json',
+        //      type: "POST",
+        //      cache: false,
+        //      // error: function() {alert("Error")},
+        //      // success: function() {alert("Success")}
+        //     });
+
+
+        // },
+
+        loadForm: function(){
+            $("#condition").val('{{condition}}')
+            $("#leftDrugName").val(main.drugA_Name)
+            $("#rightDrugName").val(main.drugB_Name)
+            
+            if(main.position === 0){
+                $("#leftDrugRarity").val('Common')
+                $("#rightDrugRarity").val('Rare')    
+            }else{
+                $("#leftDrugRarity").val('Rare')
+                $("#rightDrugRarity").val('Common')
+            }
+            
+            var color = String(main.drugA_color).split('/')
+            color = color[color.length-1].split('.')[0]
+            $("#leftDrugColor").val(color)
+
+            var color = String(main.drugB_color).split('/')
+            color = color[color.length-1].split('.')[0]
+            $("#rightDrugColor").val(color)
+
+            $("#leftNumberBad").val($('#drugA_textInput').val())
+            $("#rightNumberBad").val($('#drugB_textInput').val())
+            
+            if({{faces}} === 0){ // good outcomes on the left
+                $("#goodOutcomesLeft").val($('#left_GB_drugA_Input').val())
+                $("#goodOutcomesRight").val($('#left_GB_drugB_Input').val())
+                $("#badOutcomesLeft").val($('#right_GB_drugA_Input').val())
+                $("#badOutcomesRight").val($('#right_GB_drugB_Input').val())
+            }else{
+                $("#goodOutcomesLeft").val($('#right_GB_drugA_Input').val())
+                $("#goodOutcomesRight").val($('#right_GB_drugB_Input').val())
+                $("#badOutcomesLeft").val($('#left_GB_drugA_Input').val())
+                $("#badOutcomesRight").val($('#left_GB_drugB_Input').val())
+            }
+
 
 
         },
 
-        sendAjaxDrug: function(progress, outcome, value_A, value_B){
-            // console.log('Progress: '+progress)
-            // console.log('Outcome: '+outcome)
-            // console.log('Value A: '+value_A)
-            // console.log('Value B: '+value_B)
+        sendAjax: function(){
+            console.log("condition: "+$('#condition').val())
+            console.log("leftDrugName: "+$('#leftDrugName').val())
+            console.log("rightDrugName: "+$('#rightDrugName').val())
+            console.log("leftDrugRarity: "+$('#leftDrugRarity').val())
+            console.log("rightDrugRarity: "+$('#rightDrugRarity').val())
+            console.log("leftDrugColor: "+$('#leftDrugColor').val())
+            console.log("rightDrugColor: "+$('#rightDrugColor').val())
+            console.log("leftNumberBad: "+$('#leftNumberBad').val())
+            console.log("rightNumberBad: "+$('#rightNumberBad').val())
+            console.log("goodOutcomesLeft: "+$('#goodOutcomesLeft').val())
+            console.log("goodOutcomesRight: "+$('#goodOutcomesRight').val())
+            console.log("badOutcomesLeft: "+$('#badOutcomesLeft').val())
+            console.log("badOutcomesRight: "+$('#badOutcomesRight').val())
+            console.log("causalJudgment: "+$('#causalJudgment').val())
+            console.log("judgmentOrder: "+$('#judgmentOrder').val())
             
-            $('#drugA_JudgmentInput').val(value_A)
-            $('#drugB_JudgmentInput').val(value_B)
-            $('#judgmentNumberInput2').val(progress+1)
-            $('#drugA_NameInput').val(main.$drugA_Spans.text().slice(0,5))
-            $('#drugB_NameInput').val(main.$drugB_Spans.text().slice(0,5))
-
-            if(outcome == 'L'){
-                // faces tells you if good is left or right
-                if({{faces}} == 0){
-                    $('#outcomeTotalInput').val(main.goodOutcomes) // main.goodOutcomes is number of good outcomes
-                    $('#outcomeInput').val('GOOD')
-                }else{
-                    $('#outcomeTotalInput').val(main.badOutcomes)
-                    $('#outcomeInput').val('BAD')
-                }
-            }else if(outcome == 'R'){
-                // faces tells you if good is left or right
-                if({{faces}} == 0){
-                    $('#outcomeTotalInput').val(main.badOutcomes) // main.goodOutcomes is number of good outcomes
-                    $('#outcomeInput').val('BAD')
-                }else{
-                    $('#outcomeTotalInput').val(main.goodOutcomes)
-                    $('#outcomeInput').val('GOOD')
-                }
-            }
-
-            // send to back end with ajax
 
             $.ajax({
-             url:"/AjaxDrugMemoryTest",
-             data: main.$dataform2.serialize(),
-             // data: $('#dataform1').serialize(),
-             dataType: 'json',
-             type: "POST",
-             cache: false,
-             // error: function() {alert("Error")},
-             // success: function() {alert("Success")}
+                 url:"/AjaxMemoryTest",
+                 data: main.$dataform.serialize(),
+                 // data: $('#dataform1').serialize(),
+                 dataType: 'json',
+                 type: "POST",
+                 cache: false,
+                 // error: function() {alert("Error")},
+                 // success: function() {alert("Success")}
             });
-
-
         },
 
         mySubmit: function(){
@@ -828,6 +801,6 @@ $(document).ready(function(){
 
 
 
-})
+// })
  </script>
 {% endblock %}

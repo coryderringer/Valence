@@ -26,6 +26,11 @@ indexes:
   - name: scenario
   - name: judgmentNumber
 
+- kind: FinalJudgmentData
+  properties:
+  - name: usernum
+  - name: scenario
+
 - kind: OutcomeMemoryJudgmentData
   properties:
   - name: usernum

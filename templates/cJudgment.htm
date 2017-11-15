@@ -67,11 +67,7 @@
 
         <!-- ajax form to send tbt data to datastore -->
         <form id="dataform" method="post" action="/AjaxCausalTest">
-            <input id="leftDrugNameInput" name="leftDrugNameInput" type="hidden"> <!-- common or rare -->
-            <input id="rightDrugNameInput" name="rightDrugNameInput" type="hidden">
-            <input id="commonDrugInput" name="commonDrugInput" type="hidden"> <!-- left or right -->
-            <input id="leftDrugColorInput" name="leftDrugColorInput" type="hidden">
-            <input id="rightDrugColorInput" name="rightDrugColorInput" type="hidden">
+            
             <input id="judgmentInput" name="judgmentInput" type="hidden"> <!-- out of 20 -->
             
                 <!-- data[13] -->
@@ -318,44 +314,7 @@ $(document).ready(function(){
         mySubmit: function(){
             var value = main.$strengthSlider.val()
 
-            // get names and colors of the left and right drugs, whether they're common or rare (sanity check to get all of them)
-
-            // get color strings:
-            var leftColor = String(main.drugA_color).split('/')
-            var leftColor = leftColor[leftColor.length-1].split('.')[0]
-
-            var rightColor = String(main.drugB_color).split('/')
-            var rightColor = rightColor[rightColor.length-1].split('.')[0]  
-                
-            // main.position tells us if left (0) or right (1) drug was more common in the scenario
-            if(main.position == 0){
-                //console.log('Left Drug Name: '+String(main.drugA_Name)+' (common drug)')
-                //console.log('Right Drug Name: '+String(main.drugB_Name)+' (rare drug)')    
-            }else{
-                //console.log('Left Drug Name: '+String(main.drugA_Name)+' (rare drug)')
-                //console.log('Right Drug Name: '+String(main.drugB_Name)+' (common drug)')
-            }
             
-            
-            //console.log('Left Color: '+leftColor)
-            //console.log('Right Color: '+rightColor)
-
-            //console.log('Judgment: '+value)
-            //console.log('submitting form!')
-            
-
-            // fill form inputs
-            main.$leftDrugNameInput.val(main.drugA_Name)
-            main.$rightDrugNameInput.val(main.drugB_Name)
-            
-            if(main.position == 0){
-                main.$commonDrugInput.val('Left')    
-            }else{
-                main.$commonDrugInput.val('Right')    
-            }
-            
-            main.$leftDrugColorInput.val(leftColor)
-            main.$rightDrugColorInput.val(rightColor)
             main.$judgmentInput.val(value)
             
 

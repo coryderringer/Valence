@@ -45,46 +45,31 @@ class ScenarioData(db.Model):
 	trialGuess = 		db.StringProperty()
 	trialCorrect = 		db.StringProperty()
 	profitImpact = 		db.IntegerProperty()
+	condition = 		db.StringProperty()
 	
-class OutcomeMemoryJudgmentData(db.Model):
+class FinalJudgmentData(db.Model):
 	user  =				db.ReferenceProperty(User)
 	account = 			db.StringProperty()
 	usernum =			db.IntegerProperty()
 	scenario = 			db.IntegerProperty()
+	condition = 		db.StringProperty()
 
-	drug = 				db.StringProperty() # common or rare drug
-	drugName = 			db.StringProperty() # actual name they saw
-	drugColor = 		db.StringProperty() # color of drug
-	drugJudgment =		db.IntegerProperty() # numerical judgment out of 100
-	judgmentNumber =	db.IntegerProperty() # 1st or second judgment
+	leftDrugName =		db.StringProperty()
+	rightDrugName =		db.StringProperty()
+	leftDrugRarity =	db.StringProperty()
+	rightDrugRarity =	db.StringProperty()
+	leftDrugColor = 	db.StringProperty()
+	rightDrugColor = 	db.StringProperty()
+	leftNumberBad =		db.IntegerProperty() # number of bad outcomes for each drug
+	rightNumberBad =	db.IntegerProperty()
+	goodOutcomesLeft =	db.IntegerProperty() # given a good outcome, how many got the left drug?
+	goodOutcomesRight =	db.IntegerProperty()
+	badOutcomesLeft =	db.IntegerProperty()
+	badOutcomesRight = 	db.IntegerProperty()
+	causalJudgment =	db.IntegerProperty() # which drug is worse? higher numbers mean the right side is worse
+	judgmentOrder =		db.IntegerProperty() # will have to make a code for this, list possible orders, assign one
+	
 
-class DrugMemoryJudgmentData(db.Model):
-	user  =				db.ReferenceProperty(User)
-	account = 			db.StringProperty()
-	usernum =			db.IntegerProperty()
-	scenario = 			db.IntegerProperty()
-
-	outcome = 				db.StringProperty() # common or rare drug
-	outcomeTotal = 			db.IntegerProperty() # actual name they saw
-	drugA_Judgment = 		db.IntegerProperty() # color of drug
-	drugB_Judgment =		db.IntegerProperty() # numerical judgment out of 100
-	drugA_Name = 			db.StringProperty()
-	drugB_Name = 			db.StringProperty()
-	judgmentNumber =		db.IntegerProperty() # 1st or second judgment
-
-
-class CausalJudgmentData(db.Model):
-	user  =				db.ReferenceProperty(User)
-	account = 			db.StringProperty()
-	usernum =			db.IntegerProperty()
-	scenario = 			db.IntegerProperty()
-
-	commonDrug = 		db.StringProperty() # common drug on right or left
-	leftDrugName = 		db.StringProperty() # actual name they saw
-	rightDrugName = 	db.StringProperty() # actual name they saw
-	leftDrugColor = 	db.StringProperty() # color of drug
-	rightDrugColor = 	db.StringProperty() # color of drug
-	drugJudgment =		db.IntegerProperty() # numerical judgment out of 20 (0 maximal left)
 
 #This stores the current number of participants who have ever taken the study.
 #see https://developers.google.com/appengine/docs/pythondatastore/transactions
@@ -197,7 +182,8 @@ class AjaxHandler(webapp.RequestHandler):
 				trialNumber = trialNumber,
 				trialGuess = trialGuess,
 				trialCorrect = trialCorrect,
-				profitImpact = profitImpact);
+				profitImpact = profitImpact,
+				condition = self.session['conditions'][self.session['scenario']]);
 		
 
 			newajaxmessage.put()
@@ -215,7 +201,8 @@ class AjaxHandler(webapp.RequestHandler):
 			obj.trialGuess = trialGuess
 			obj.trialCorrect = trialCorrect
 			obj.profitImpact = profitImpact
-			
+			obj.condition = self.session['conditions'][self.session['scenario']]
+
 			obj.put()
 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
 
@@ -229,68 +216,89 @@ class AjaxHandler(webapp.RequestHandler):
 		obj.put()
 		self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
 
-class AjaxOutcomeMemoryHandler(webapp.RequestHandler):
-	def get(self):
-		que=db.Query(OutcomeMemoryJudgmentData)
-		que.order("usernum").order("scenario").order("judgmentNumber")
-		d=que.fetch(limit=10000)
-		doRender(self, 'ajaxTest.htm',{'d':d})
+# class AjaxOutcomeMemoryHandler(webapp.RequestHandler):
+# 	def get(self):
+# 		que=db.Query(FinalJudgmentData)
+# 		que.order("usernum").order("scenario").order("judgmentNumber")
+# 		d=que.fetch(limit=10000)
+# 		doRender(self, 'ajaxTest.htm',{'d':d})
 
-	def post(self):
-		self.session=get_current_session()
+# 	def post(self):
+# 		self.session=get_current_session()
 		
 
-  		drug = str(self.request.get('drugInput')) # left (A) or right (B)
+#   		drug = str(self.request.get('drugInput')) # left (A) or right (B)
   		
-  		drugName = str(self.request.get('drugNameInput'))
-		drugColor = str(self.request.get('drugColorInput')) 
-		drugJudgment = int(self.request.get('judgmentInput'))
+#   		drugName = str(self.request.get('drugNameInput'))
+# 		drugColor = str(self.request.get('drugColorInput')) 
+# 		drugJudgment = int(self.request.get('judgmentInput'))
 		
-		judgmentNumber = int(self.request.get('judgmentNumberInput'))
-		scenario = self.session['scenario']
+# 		judgmentNumber = int(self.request.get('judgmentNumberInput'))
+# 		scenario = self.session['scenario']
 
-		# how to check if there are example rows in the datastore
-		que = db.Query(OutcomeMemoryJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario).filter('judgmentNumber =', judgmentNumber)
-		results = que.fetch(limit=1000)
+# 		# how to check if there are example rows in the datastore
+# 		que = db.Query(FinalJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario).filter('judgmentNumber =', judgmentNumber)
+# 		results = que.fetch(limit=1000)
 		
-		# make all of the data items into 3-value arrays, then make a loop to put them in the datastore
-		if (len(results) == 0):   
-			newajaxmessage = OutcomeMemoryJudgmentData(
-				user=self.session['userkey'],
-				usernum = self.session['usernum'],
-				account = self.session['account'],
-				
-				drug = drug,
-				drugName = drugName,
-				drugColor = drugColor,
-				drugJudgment = drugJudgment,
-				judgmentNumber = judgmentNumber,
-				scenario = scenario);
+# 		# make all of the data items into 3-value arrays, then make a loop to put them in the datastore
+# 		if (len(results) == 0):   
+# 			newajaxmessage = FinalJudgmentData(
+# 				# user properties
+# 				user=self.session['userkey'],
+# 				usernum = usernum,
+# 				account = self.session['account'],				
+# 				# scenario properties
+# 				scenario = scenario,
+# 				condition = self.session['conditions'][self.session['scenario']],
+# 				# drug properties
+# 				leftDrugName = drugA_Name,
+# 				rightDrugName = drugB_Name,
+# 				leftDrugRarity = leftDrugRarity, # DO THESE
+# 				rightDrugRarity = rightDrugRarity,
+# 				leftDrugColor = leftDrugColor,
+# 				rightDrugColor = rightDrugColor,
+# 				leftNumberBad = leftNumberBad, 
+# 				rightNumberBad = rightNumberBad, 
+# 				# goodOutcomesLeft = goodOutcomesLeft, Not this handler
+# 				# goodOutcomesRight = goodOutcomesRight, Not this handler
+# 				# badOutcomesLeft = badOutcomesLeft, Not this handler
+# 				# badOutcomesRight = badOutcomesRight, Not this handler
+# 				# causalJudgment = causalJudgment, Not this handler
+# 				judgmentOrder = judgmentOrder);
 		
+# 			newajaxmessage.put()
+# 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # not sure what this does?
 
-			newajaxmessage.put()
-			self.response.out.write(json.dumps(({'blah': 'blah'}))) # not sure what this does?
-
-		else:
-			obj = que.get()
-			obj.user=self.session['userkey']
-			obj.usernum = self.session['usernum']
-			obj.account = self.session['account']
+# 		else:
+# 			obj = que.get()
 			
-			obj.drug = drug
-			obj.drugName = drugName
-			obj.drugColor = drugColor
-			obj.drugJudgment = drugJudgment
-			obj.judgmentNumber = judgmentNumber
-			obj.scenario = scenario
-			
-			obj.put()
-			self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
+# 			# user properties
+# 			obj.user=self.session['userkey']
+# 			obj.usernum = usernum
+# 			obj.account = self.session['account']				
+# 			# scenario properties
+# 			obj.scenario = scenario
+# 			obj.condition = self.session['conditions'][self.session['scenario']]
+# 			# drug properties
+# 			obj.leftDrugName = drugA_Name
+# 			obj.rightDrugName = drugB_Name
+# 			obj.leftDrugRarity = leftDrugRarity # DO THESE
+# 			obj.rightDrugRarity = rightDrugRarity
+# 			obj.leftDrugColor = leftDrugColor
+# 			obj.rightDrugColor = rightDrugColor
+# 			obj.leftNumberBad = leftNumberBad
+# 			obj.rightNumberBad = rightNumberBad 
+# 			# goodOutcomesLeft = goodOutcomesLeft, Not this handler
+# 			# goodOutcomesRight = goodOutcomesRight, Not this handler
+# 			# badOutcomesLeft = badOutcomesLeft, Not this handler
+# 			# badOutcomesRight = badOutcomesRight, Not this handler
+# 			# causalJudgment = causalJudgment, Not this handler
+# 			obj.judgmentOrder = judgmentOrder
 
 
-class AjaxDrugMemoryHandler(webapp.RequestHandler):
+class AjaxMemoryHandler(webapp.RequestHandler):
 	def get(self):
-		que=db.Query(DrugMemoryJudgmentData)
+		que=db.Query(FinalJudgmentData)
 		que.order("usernum").order("scenario").order("judgmentNumber")
 		d=que.fetch(limit=10000)
 		doRender(self, 'ajaxTest.htm',{'d':d})
@@ -298,65 +306,120 @@ class AjaxDrugMemoryHandler(webapp.RequestHandler):
 	def post(self):
 		self.session=get_current_session()
 
-
-  		outcome = str(self.request.get('outcomeInput')) # good or bad
-  		outcomeTotal = int(self.request.get('outcomeTotalInput'))
-  		drugA_Judgment = int(self.request.get('drugA_JudgmentInput'))
-  		drugB_Judgment = int(self.request.get('drugB_JudgmentInput'))
-  		drugA_Name = str(self.request.get('drugA_NameInput'))
-  		drugB_Name = str(self.request.get('drugB_NameInput'))
-  		judgmentNumber = int(self.request.get('judgmentNumberInput2'))
-
-  		logging.info('outcome: '+outcome)
-  		logging.info('outcomeTotal: '+str(outcomeTotal))
-  		logging.info('drugA_Judgment: '+str(drugA_Judgment))
-  		logging.info('drugB_Judgment: '+str(drugB_Judgment))
-  		logging.info('drugA_Name: '+drugA_Name)
-  		logging.info('drugB_Name: '+drugB_Name)
-  		logging.info('judgmentNumber: '+str(judgmentNumber))
-
-  		scenario = self.session['scenario']
+		# console.log("condition: "+$('#condition').val())
+  #       console.log("leftDrugName: "+$('#leftDrugName').val())
+  #       console.log("rightDrugName: "+$('#rightDrugName').val())
+  #       console.log("leftDrugRarity: "+$('#leftDrugRarity').val())
+  #       console.log("rightDrugRarity: "+$('#rightDrugRarity').val())
+  #       console.log("leftDrugColor: "+$('#leftDrugColor').val())
+  #       console.log("rightDrugColor: "+$('#rightDrugColor').val())
+  #       console.log("leftNumberBad: "+$('#leftNumberBad').val())
+  #       console.log("rightNumberBad: "+$('#rightNumberBad').val())
+  #       console.log("goodOutcomesLeft: "+$('#goodOutcomesLeft').val())
+  #       console.log("goodOutcomesRight: "+$('#goodOutcomesRight').val())
+  #       console.log("badOutcomesLeft: "+$('#badOutcomesLeft').val())
+  #       console.log("badOutcomesRight: "+$('#badOutcomesRight').val())
+  #       console.log("causalJudgment: "+$('#causalJudgment').val())
+  #       console.log("judgmentOrder: "+$('#judgmentOrder').val())
   		usernum = self.session['usernum']
+  		scenario = self.session['scenario']
+
+  		condition = str(self.request.get('condition')) # good or bad
+  		leftDrugName = str(self.request.get('leftDrugName'))
+  		rightDrugName = str(self.request.get('rightDrugName'))
+  		leftDrugRarity = str(self.request.get('leftDrugRarity'))
+  		rightDrugRarity = str(self.request.get('rightDrugRarity'))
+		leftDrugColor = str(self.request.get('leftDrugColor'))
+  		rightDrugColor = str(self.request.get('rightDrugColor'))
+  		leftNumberBad = int(self.request.get('leftNumberBad'))
+  		rightNumberBad = int(self.request.get('rightNumberBad'))
+  		goodOutcomesLeft = int(self.request.get('goodOutcomesLeft'))
+  		goodOutcomesRight = int(self.request.get('goodOutcomesRight'))
+  		badOutcomesLeft = int(self.request.get('badOutcomesLeft'))
+  		badOutcomesRight = int(self.request.get('badOutcomesRight'))
+  		judgmentOrder = 0 # testing
 
 
-		# how to check if there are example rows in the datastore
-		que = db.Query(OutcomeMemoryJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario).filter('judgmentNumber =', judgmentNumber)
+  		logging.info("usernum: " + str(usernum))
+  		logging.info('account: ' + str(self.session['account']))
+  		logging.info("condition: "+ str(condition))
+  		logging.info("leftDrugName: "+ str(leftDrugName))
+  		logging.info("rightDrugName: "+ str(rightDrugName))
+  		logging.info("leftDrugRarity: "+ str(leftDrugRarity))
+  		logging.info("rightDrugRarity: "+ str(rightDrugRarity))
+		logging.info("leftDrugColor: "+ str(leftDrugColor))
+  		logging.info("rightDrugColor: "+ str(rightDrugColor))
+  		logging.info("leftNumberBad: "+ str(leftNumberBad))
+  		logging.info("rightNumberBad: "+ str(rightNumberBad))
+  		logging.info("goodOutcomesLeft: "+ str(goodOutcomesLeft))
+  		logging.info("goodOutcomesRight: "+ str(goodOutcomesRight))
+  		logging.info("badOutcomesLeft: "+ str(badOutcomesLeft))
+  		logging.info("badOutcomesRight: "+ str(badOutcomesRight))
+  		logging.info("judgmentOrder: "+ str(judgmentOrder))
+
+		que = db.Query(FinalJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario)
 		results = que.fetch(limit=1000)
-		
+
+
 		# make all of the data items into 3-value arrays, then make a loop to put them in the datastore
 		if (len(results) == 0):   
-			newajaxmessage = DrugMemoryJudgmentData(
+			logging.info('NEW ENTRY')
+			newajaxmessage = FinalJudgmentData(
+				# user properties
 				user=self.session['userkey'],
 				usernum = usernum,
-				account = self.session['account'],
+				account = self.session['account'],				
+				# scenario properties
 				scenario = scenario,
-
-				outcome = outcome,
-				outcomeTotal = outcomeTotal,
-				drugA_Judgment = drugA_Judgment,
-				drugB_Judgment = drugB_Judgment,
-				drugA_Name = drugA_Name,
-				drugB_Name = drugB_Name,
-				judgmentNumber = judgmentNumber);
+				condition = condition,
+				# drug properties
+				leftDrugName = leftDrugName,
+				rightDrugName = rightDrugName,
+				leftDrugRarity = leftDrugRarity, # DO THESE
+				rightDrugRarity = rightDrugRarity,
+				leftDrugColor = leftDrugColor,
+				rightDrugColor = rightDrugColor,
+				leftNumberBad = leftNumberBad,
+				rightNumberBad = rightNumberBad,
+				goodOutcomesLeft = goodOutcomesLeft,
+				goodOutcomesRight = goodOutcomesRight,
+				badOutcomesLeft = badOutcomesLeft,
+				badOutcomesRight = badOutcomesRight,
+				# causalJudgment = causalJudgment, Not this handler
+				judgmentOrder = judgmentOrder);
 		
 			newajaxmessage.put()
 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # not sure what this does?
 
 		else:
+			logging.info('UPDATING CURRENT')
 			obj = que.get()
+			
+			# user properties
 			obj.user=self.session['userkey']
 			obj.usernum = usernum
-			obj.account = self.session['account']
-			obj.scenario = scenario
-
-			obj.outcome = outcome
-			obj.outcomeTotal = outcomeTotal
-			obj.drugA_Judgment = drugA_Judgment
-			obj.drugB_Judgment = drugB_Judgment
-			obj.drugA_Name = drugA_Name
-			obj.drugB_Name = drugB_Name
-			obj.judgmentNumber = judgmentNumber
+			obj.account = self.session['account']				
 			
+			# scenario properties
+			obj.scenario = scenario
+			obj.condition = condition
+			
+			# drug properties
+			obj.leftDrugName = leftDrugName
+			obj.rightDrugName = rightDrugName
+			obj.leftDrugRarity = leftDrugRarity # DO THESE
+			obj.rightDrugRarity = rightDrugRarity
+			obj.leftDrugColor = leftDrugColor
+			obj.rightDrugColor = rightDrugColor
+			leftNumberBad = leftNumberBad
+			rightNumberBad = rightNumberBad
+			obj.goodOutcomesLeft = goodOutcomesLeft
+			obj.goodOutcomesRight = goodOutcomesRight
+			obj.badOutcomesLeft = badOutcomesLeft
+			obj.badOutcomesRight = badOutcomesRight
+			# causalJudgment = causalJudgment, Not this handler
+			obj.judgmentOrder = judgmentOrder
+
 			obj.put()
 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
 
@@ -364,7 +427,7 @@ class AjaxDrugMemoryHandler(webapp.RequestHandler):
 class AjaxCausalHandler(webapp.RequestHandler):
 	def get(self):
 		# I don't even think I need this handler...
-		que=db.Query(CausalJudgmentData)
+		que=db.Query(FinalJudgmentData)
 		que.order("usernum").order("scenario").order("judgmentNumber")
 		d=que.fetch(limit=10000)
 		doRender(self, 'ajaxCausalTest.htm',{'d':d})
@@ -373,62 +436,74 @@ class AjaxCausalHandler(webapp.RequestHandler):
 		self.session=get_current_session()
 		# message=str(self.request.get('message'))
 		
-
-  		leftDrugName = str(self.request.get('leftDrugNameInput')) 
-  		rightDrugName = str(self.request.get('rightDrugNameInput'))
-  		commonDrug = str(self.request.get('commonDrugInput'))
-  		leftDrugColor = str(self.request.get('leftDrugColorInput'))
-  		rightDrugColor = str(self.request.get('rightDrugColorInput'))
-  		drugJudgment = int(self.request.get('judgmentInput'))
-  		
-		logging.info('Left Name: '+str(leftDrugName))
-		logging.info('Right Name: '+str(rightDrugName))
-		logging.info('Common (L/R): '+str(commonDrug))
-		logging.info('Left Color: '+str(leftDrugColor))
-		logging.info('Right Color: '+str(rightDrugColor))
-		logging.info('Judgment: '+str(drugJudgment))
-
+		usernum = self.session['usernum']
 		scenario = self.session['scenario']
+		
+		causalJudgment = int(self.request.get('judgmentInput'))
+		
 		# how to check if there are example rows in the datastore
-		que = db.Query(CausalJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario)
+		que = db.Query(FinalJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario)
 		results = que.fetch(limit=1000)
 		
 		# make all of the data items into 3-value arrays, then make a loop to put them in the datastore
 		if (len(results) == 0):   
-			newajaxmessage = CausalJudgmentData(
+			logging.info('NEW ENTRY')
+			newajaxmessage = FinalJudgmentData(
+				# user properties
 				user=self.session['userkey'],
-				usernum = self.session['usernum'],
-				account = self.session['account'],
+				usernum = usernum,
+				account = self.session['account'],				
+				# scenario properties
 				scenario = scenario,
-
-				commonDrug = commonDrug,
-				leftDrugName = leftDrugName,
-				rightDrugName = rightDrugName,
-				leftDrugColor = leftDrugColor,
-				rightDrugColor = rightDrugColor,
-				drugJudgment = drugJudgment);
+				# condition = self.session['conditions'][self.session['scenario']],
+				# drug properties
+				# leftDrugName = drugA_Name,
+				# rightDrugName = drugB_Name,
+				# leftDrugRarity = leftDrugRarity, # DO THESE
+				# rightDrugRarity = rightDrugRarity,
+				# leftDrugColor = leftDrugColor,
+				# rightDrugColor = rightDrugColor,
+				# leftNumberBad = leftNumberBad, Not this handler
+				# rightNumberBad = rightNumberBad, Not this handler
+				# goodOutcomesLeft = goodOutcomesLeft,
+				# goodOutcomesRight = goodOutcomesRight,
+				# badOutcomesLeft = badOutcomesLeft,
+				# badOutcomesRight = badOutcomesRight,
+				causalJudgment = causalJudgment);
+				# judgmentOrder = judgmentOrder);
 		
-
 			newajaxmessage.put()
 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # not sure what this does?
 
 		else:
+			logging.info('UPDATING CURRENT')
 			obj = que.get()
+			
+			# user properties
 			obj.user=self.session['userkey']
-			obj.usernum = self.session['usernum']
-			obj.account = self.session['account']
+			obj.usernum = usernum
+			obj.account = self.session['account']				
+			# scenario properties
 			obj.scenario = scenario
-
-			obj.commonDrug = commonDrug
-			obj.leftDrugName = leftDrugName
-			obj.rightDrugName = rightDrugName
-			obj.leftDrugColor = leftDrugColor
-			obj.rightDrugColor = rightDrugColor
-			obj.drugJudgment = drugJudgment
+			# obj.condition = self.session['conditions'][self.session['scenario']]
+			# drug properties
+			# obj.leftDrugName = drugA_Name
+			# obj.rightDrugName = drugB_Name
+			# obj.leftDrugRarity = leftDrugRarity # DO THESE
+			# obj.rightDrugRarity = rightDrugRarity
+			# obj.leftDrugColor = leftDrugColor
+			# obj.rightDrugColor = rightDrugColor
+			# leftNumberBad = leftNumberBad, Not this handler
+			# rightNumberBad = rightNumberBad, Not this handler
+			# goodOutcomesLeft = goodOutcomesLeft,
+			# goodOutcomesRight = goodOutcomesRight,
+			# badOutcomesLeft = badOutcomesLeft,
+			# badOutcomesRight = badOutcomesRight,
+			obj.causalJudgment = causalJudgment
+			# obj.judgmentOrder = judgmentOrder
 
 			obj.put()
 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
-
 
 
 ###############################################################################
@@ -583,7 +658,7 @@ class SecondJudgmentHandler(webapp.RequestHandler):
 
 
 		self.session['scenario'] += 1
-		# self.session['scenario'] = 1 # testing
+		self.session['scenario'] = 1 # testing
 	
 		scenario=self.session['scenario']		
 		
@@ -673,17 +748,9 @@ class DataHandler(webapp.RequestHandler):
 			que2.order("usernum")
 			u=que2.fetch(limit=10000)
 			
-			que3 = db.Query(OutcomeMemoryJudgmentData)
+			que3 = db.Query(FinalJudgmentData)
 			que3.order("usernum").order("scenario")
 			t = que3.fetch(limit=10000)
-
-			que4 = db.Query(DrugMemoryJudgmentData)
-			que4.order("usernum").order("scenario").order("judgmentNumber")
-			v = que4.fetch(limit=10000)
-
-			que5 = db.Query(CausalJudgmentData)
-			que5.order("usernum").order("scenario")
-			c = que5.fetch(limit=10000)
 
 			if page == 'scenario':
 				doRender(
@@ -697,14 +764,13 @@ class DataHandler(webapp.RequestHandler):
 					'userData.htm',
 					{'u':u})
 
-			elif page == 'memoryTest':
+			else:
 				doRender(self, 'ajaxTest.htm',
-					{'t':t,
-					'v':v})
+					{'t':t})
 			
-			elif page == 'causalTest':
-				doRender(self, 'ajaxCausalTest.htm',
-					{'c':c})
+			# elif page == 'causalTest':
+			# 	doRender(self, 'ajaxCausalTest.htm',
+			# 		{'c':c})
 		else:
 			doRender(self, 'dataloginfail.htm')
 
@@ -1095,8 +1161,8 @@ class MturkIDHandler(webapp.RequestHandler):
 
 application = webapp.WSGIApplication([
 	('/ajax', AjaxHandler),
-	('/AjaxOutcomeMemoryTest', AjaxOutcomeMemoryHandler),
-	('/AjaxDrugMemoryTest', AjaxDrugMemoryHandler),
+	# ('/AjaxOutcomeMemoryTest', AjaxOutcomeMemoryHandler),
+	('/AjaxMemoryTest', AjaxMemoryHandler),
 	('/AjaxCausalTest', AjaxCausalHandler),
 	('/preScenario', preScenarioHandler),
 	('/instructions', InstructionsHandler),
