@@ -306,21 +306,24 @@ class AjaxMemoryHandler(webapp.RequestHandler):
 	def post(self):
 		self.session=get_current_session()
 
-		# console.log("condition: "+$('#condition').val())
-  #       console.log("leftDrugName: "+$('#leftDrugName').val())
-  #       console.log("rightDrugName: "+$('#rightDrugName').val())
-  #       console.log("leftDrugRarity: "+$('#leftDrugRarity').val())
-  #       console.log("rightDrugRarity: "+$('#rightDrugRarity').val())
-  #       console.log("leftDrugColor: "+$('#leftDrugColor').val())
-  #       console.log("rightDrugColor: "+$('#rightDrugColor').val())
-  #       console.log("leftNumberBad: "+$('#leftNumberBad').val())
-  #       console.log("rightNumberBad: "+$('#rightNumberBad').val())
-  #       console.log("goodOutcomesLeft: "+$('#goodOutcomesLeft').val())
-  #       console.log("goodOutcomesRight: "+$('#goodOutcomesRight').val())
-  #       console.log("badOutcomesLeft: "+$('#badOutcomesLeft').val())
-  #       console.log("badOutcomesRight: "+$('#badOutcomesRight').val())
-  #       console.log("causalJudgment: "+$('#causalJudgment').val())
-  #       console.log("judgmentOrder: "+$('#judgmentOrder').val())
+		# testOrder = 0: memory first
+		# memOrder = 0: ask about outcomes given drug first
+		
+		# TO = 0, MO = 0: E|C, C|E, Causal
+		# TO = 0, MO = 1: C|E, E|C, Causal
+		# TO = 1, MO = 0: Causal, E|C, C|E
+		# TO = 1, MO = 1: Causal, C|E, E|C
+
+		if self.session['testOrder'] == 0 & self.session['memOrder'] == 0:
+			judgmentOrder = 0 # E|C, C|E, Causal
+		elif self.session['testOrder'] == 0 & self.session['memOrder'] == 1:
+			judgmentOrder = 1 # C|E, E|C, Causal
+		elif self.session['testOrder'] == 1 & self.session['memOrder'] == 0:
+			judgmentOrder = 2 # Causal, E|C, C|E
+		elif self.session['testOrder'] == 1 & self.session['memOrder'] == 1:
+			judgmentOrder = 3 # Causal, C|E, E|C
+
+
   		usernum = self.session['usernum']
   		scenario = self.session['scenario']
 
@@ -337,9 +340,7 @@ class AjaxMemoryHandler(webapp.RequestHandler):
   		goodOutcomesRight = int(self.request.get('goodOutcomesRight'))
   		badOutcomesLeft = int(self.request.get('badOutcomesLeft'))
   		badOutcomesRight = int(self.request.get('badOutcomesRight'))
-  		judgmentOrder = 0 # testing
-
-
+  		
   		logging.info("usernum: " + str(usernum))
   		logging.info('account: ' + str(self.session['account']))
   		logging.info("condition: "+ str(condition))
@@ -356,6 +357,12 @@ class AjaxMemoryHandler(webapp.RequestHandler):
   		logging.info("badOutcomesLeft: "+ str(badOutcomesLeft))
   		logging.info("badOutcomesRight: "+ str(badOutcomesRight))
   		logging.info("judgmentOrder: "+ str(judgmentOrder))
+  		
+
+  		judgmentOrder = judgmentOrder 
+
+
+  		
 
 		que = db.Query(FinalJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario)
 		results = que.fetch(limit=1000)
@@ -658,7 +665,7 @@ class SecondJudgmentHandler(webapp.RequestHandler):
 
 
 		self.session['scenario'] += 1
-		self.session['scenario'] = 1 # testing
+		# self.session['scenario'] = 1 # testing
 	
 		scenario=self.session['scenario']		
 		
@@ -1074,6 +1081,14 @@ class MturkIDHandler(webapp.RequestHandler):
 		# within memory, order of asking C|E or E|C
 		# 0 is E|C first
 		memOrder = random.choice([0,1])
+
+		# testOrder = 0: memory first
+		# memOrder = 0: ask about outcomes given drug first
+
+		# TO = 0, MO = 0: E|C, C|E, Causal
+		# TO = 0, MO = 1: C|E, E|C, Causal
+		# TO = 1, MO = 0: Causal, E|C, C|E
+		# TO = 1, MO = 1: Causal, C|E, E|C
 
 
 		# counterbalance left/right for faces at the level of the participant
