@@ -418,8 +418,8 @@ class AjaxMemoryHandler(webapp.RequestHandler):
 			obj.rightDrugRarity = rightDrugRarity
 			obj.leftDrugColor = leftDrugColor
 			obj.rightDrugColor = rightDrugColor
-			leftNumberBad = leftNumberBad
-			rightNumberBad = rightNumberBad
+			obj.leftNumberBad = leftNumberBad
+			obj.rightNumberBad = rightNumberBad
 			obj.goodOutcomesLeft = goodOutcomesLeft
 			obj.goodOutcomesRight = goodOutcomesRight
 			obj.badOutcomesLeft = badOutcomesLeft
