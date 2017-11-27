@@ -314,15 +314,16 @@ class AjaxMemoryHandler(webapp.RequestHandler):
 		# TO = 1, MO = 0: Causal, E|C, C|E
 		# TO = 1, MO = 1: Causal, C|E, E|C
 
-		if self.session['testOrder'] == 0 & self.session['memOrder'] == 0:
+		if int(self.session['testOrder']) == 0 & int(self.session['memOrder']) == 0:
 			judgmentOrder = 0 # E|C, C|E, Causal
-		elif self.session['testOrder'] == 0 & self.session['memOrder'] == 1:
+		elif int(self.session['testOrder']) == 0 & int(self.session['memOrder']) == 1:
 			judgmentOrder = 1 # C|E, E|C, Causal
-		elif self.session['testOrder'] == 1 & self.session['memOrder'] == 0:
+		elif int(self.session['testOrder']) == 1 & int(self.session['memOrder']) == 0:
 			judgmentOrder = 2 # Causal, E|C, C|E
-		elif self.session['testOrder'] == 1 & self.session['memOrder'] == 1:
+		elif int(self.session['testOrder']) == 1 & int(self.session['memOrder']) == 1:
 			judgmentOrder = 3 # Causal, C|E, E|C
-
+		else:
+			judgmentOrder = 100
 
   		usernum = self.session['usernum']
   		scenario = self.session['scenario']
@@ -356,6 +357,8 @@ class AjaxMemoryHandler(webapp.RequestHandler):
   		logging.info("goodOutcomesRight: "+ str(goodOutcomesRight))
   		logging.info("badOutcomesLeft: "+ str(badOutcomesLeft))
   		logging.info("badOutcomesRight: "+ str(badOutcomesRight))
+  		logging.info("memOrder: " + str(self.session['memOrder']))
+  		logging.info("testOrder: " + str(self.session['testOrder']))
   		logging.info("judgmentOrder: "+ str(judgmentOrder))
   		
 
