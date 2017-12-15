@@ -25,7 +25,8 @@
 			<th>Correct</th>
 			<th>Time</th>
 			<th>Attention Fails</th>
-			<th>Outcome</th> <!-- positive or negative -->
+			<th>Outcome</th>
+			<th>Reloads</th> <!-- this codes back-and-forth and refresh in the same way -->
 
 		</tr>
 
@@ -41,6 +42,7 @@
 		<th>{{ i.trialTime }}</th>
 		<th>{{ i.attentionFails }}</th>
 		<th>{{ i.profitImpact }}</th>
+		<th>{{ i.reloads }}</th>
 
 		</tr>
 		{% endfor %}

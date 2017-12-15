@@ -31,6 +31,7 @@ class User(db.Model):
 	age = 				db.IntegerProperty()
 	bonusAmt =			db.IntegerProperty()
 	testOrder =			db.IntegerProperty() # 0 is memory first, 1 is causal first
+	progress = 			db.IntegerProperty()
 	
 
 class ScenarioData(db.Model):
@@ -46,6 +47,7 @@ class ScenarioData(db.Model):
 	trialCorrect = 		db.StringProperty()
 	profitImpact = 		db.IntegerProperty()
 	condition = 		db.StringProperty()
+	reloads = 			db.IntegerProperty()
 	
 class FinalJudgmentData(db.Model):
 	user  =				db.ReferenceProperty(User)
@@ -138,14 +140,6 @@ class AjaxHandler(webapp.RequestHandler):
 
 	def post(self):
 		self.session=get_current_session()
-		# message=str(self.request.get('message'))
-		
-		# <input id="timeInput" name="timeInput" type="hidden">
-  #       <input id="attentionFailsInput" name="attentionFailsInput" type="hidden">
-  #       <input id="trialInput" name="trialInput" type="hidden">
-  #       <input id="guessInput" name="guessInput" type="hidden">
-  #       <input id="correctInput" name="correctInput" type="hidden">
-  #       <input id="profitImpactInput" name="profitImpactInput" type="hidden">
 
   		trialTime = int(self.request.get('timeInput'))
   		attentionFails = int(self.request.get('attentionFailsInput'))
@@ -154,6 +148,11 @@ class AjaxHandler(webapp.RequestHandler):
 		trialCorrect = str(self.request.get('correctInput')) # gives the correct answer (A or B)
 		profitImpact = int(self.request.get('profitImpactInput'))
 		totalBonus = int(self.request.get('runningBonusInput'))
+		self.session['trialNumber'] = int(self.request.get('trialNumberInput'))
+		self.session['reloads'] = int(self.request.get('reloadsInput'))
+
+
+		logging.info('RELOADS: '+str(self.session['reloads']))
 
 		logging.info('BONUS!!!!!! '+str(totalBonus))
 
@@ -180,6 +179,7 @@ class AjaxHandler(webapp.RequestHandler):
 				trialTime = trialTime,
 				attentionFails = attentionFails,
 				trialNumber = trialNumber,
+				reloads		= self.session['reloads'],
 				trialGuess = trialGuess,
 				trialCorrect = trialCorrect,
 				profitImpact = profitImpact,
@@ -190,14 +190,16 @@ class AjaxHandler(webapp.RequestHandler):
 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # not sure what this does?
 
 		else:
+			
 			obj = que.get()
 			obj.user=self.session['userkey']
 			obj.usernum = self.session['usernum']
 			obj.account = self.session['account']
-			obj.scenario = self.session['scenario'],
+			obj.scenario = self.session['scenario']
 			obj.trialTime = trialTime
 			obj.attentionFails = attentionFails
 			obj.trialNumber = trialNumber
+			obj.reloads = self.session['reloads']
 			obj.trialGuess = trialGuess
 			obj.trialCorrect = trialCorrect
 			obj.profitImpact = profitImpact
@@ -215,85 +217,6 @@ class AjaxHandler(webapp.RequestHandler):
 		
 		obj.put()
 		self.response.out.write(json.dumps(({'blah': 'blah'}))) # ?
-
-# class AjaxOutcomeMemoryHandler(webapp.RequestHandler):
-# 	def get(self):
-# 		que=db.Query(FinalJudgmentData)
-# 		que.order("usernum").order("scenario").order("judgmentNumber")
-# 		d=que.fetch(limit=10000)
-# 		doRender(self, 'ajaxTest.htm',{'d':d})
-
-# 	def post(self):
-# 		self.session=get_current_session()
-		
-
-#   		drug = str(self.request.get('drugInput')) # left (A) or right (B)
-  		
-#   		drugName = str(self.request.get('drugNameInput'))
-# 		drugColor = str(self.request.get('drugColorInput')) 
-# 		drugJudgment = int(self.request.get('judgmentInput'))
-		
-# 		judgmentNumber = int(self.request.get('judgmentNumberInput'))
-# 		scenario = self.session['scenario']
-
-# 		# how to check if there are example rows in the datastore
-# 		que = db.Query(FinalJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario).filter('judgmentNumber =', judgmentNumber)
-# 		results = que.fetch(limit=1000)
-		
-# 		# make all of the data items into 3-value arrays, then make a loop to put them in the datastore
-# 		if (len(results) == 0):   
-# 			newajaxmessage = FinalJudgmentData(
-# 				# user properties
-# 				user=self.session['userkey'],
-# 				usernum = usernum,
-# 				account = self.session['account'],				
-# 				# scenario properties
-# 				scenario = scenario,
-# 				condition = self.session['conditions'][self.session['scenario']],
-# 				# drug properties
-# 				leftDrugName = drugA_Name,
-# 				rightDrugName = drugB_Name,
-# 				leftDrugRarity = leftDrugRarity, # DO THESE
-# 				rightDrugRarity = rightDrugRarity,
-# 				leftDrugColor = leftDrugColor,
-# 				rightDrugColor = rightDrugColor,
-# 				leftNumberBad = leftNumberBad, 
-# 				rightNumberBad = rightNumberBad, 
-# 				# goodOutcomesLeft = goodOutcomesLeft, Not this handler
-# 				# goodOutcomesRight = goodOutcomesRight, Not this handler
-# 				# badOutcomesLeft = badOutcomesLeft, Not this handler
-# 				# badOutcomesRight = badOutcomesRight, Not this handler
-# 				# causalJudgment = causalJudgment, Not this handler
-# 				judgmentOrder = judgmentOrder);
-		
-# 			newajaxmessage.put()
-# 			self.response.out.write(json.dumps(({'blah': 'blah'}))) # not sure what this does?
-
-# 		else:
-# 			obj = que.get()
-			
-# 			# user properties
-# 			obj.user=self.session['userkey']
-# 			obj.usernum = usernum
-# 			obj.account = self.session['account']				
-# 			# scenario properties
-# 			obj.scenario = scenario
-# 			obj.condition = self.session['conditions'][self.session['scenario']]
-# 			# drug properties
-# 			obj.leftDrugName = drugA_Name
-# 			obj.rightDrugName = drugB_Name
-# 			obj.leftDrugRarity = leftDrugRarity # DO THESE
-# 			obj.rightDrugRarity = rightDrugRarity
-# 			obj.leftDrugColor = leftDrugColor
-# 			obj.rightDrugColor = rightDrugColor
-# 			obj.leftNumberBad = leftNumberBad
-# 			obj.rightNumberBad = rightNumberBad 
-# 			# goodOutcomesLeft = goodOutcomesLeft, Not this handler
-# 			# goodOutcomesRight = goodOutcomesRight, Not this handler
-# 			# badOutcomesLeft = badOutcomesLeft, Not this handler
-# 			# badOutcomesRight = badOutcomesRight, Not this handler
-# 			# causalJudgment = causalJudgment, Not this handler
-# 			obj.judgmentOrder = judgmentOrder
 
 
 class AjaxMemoryHandler(webapp.RequestHandler):
@@ -314,13 +237,13 @@ class AjaxMemoryHandler(webapp.RequestHandler):
 		# TO = 1, MO = 0: Causal, E|C, C|E
 		# TO = 1, MO = 1: Causal, C|E, E|C
 
-		if int(self.session['testOrder']) == 0 & int(self.session['memOrder']) == 0:
+		if (int(self.session['testOrder']) == 0) & (int(self.session['memOrder']) == 0):
 			judgmentOrder = 0 # E|C, C|E, Causal
-		elif int(self.session['testOrder']) == 0 & int(self.session['memOrder']) == 1:
+		elif (int(self.session['testOrder']) == 0) & (int(self.session['memOrder']) == 1):
 			judgmentOrder = 1 # C|E, E|C, Causal
-		elif int(self.session['testOrder']) == 1 & int(self.session['memOrder']) == 0:
+		elif (int(self.session['testOrder']) == 1) & (int(self.session['memOrder']) == 0):
 			judgmentOrder = 2 # Causal, E|C, C|E
-		elif int(self.session['testOrder']) == 1 & int(self.session['memOrder']) == 1:
+		elif (int(self.session['testOrder']) == 1) & (int(self.session['memOrder']) == 1):
 			judgmentOrder = 3 # Causal, C|E, E|C
 		else:
 			judgmentOrder = 100
@@ -451,6 +374,16 @@ class AjaxCausalHandler(webapp.RequestHandler):
 		
 		causalJudgment = int(self.request.get('judgmentInput'))
 		
+
+  		usernum = self.session['usernum']
+  		scenario = self.session['scenario']
+
+  		logging.info("usernum: " + str(usernum))
+  		logging.info('account: ' + str(self.session['account']))
+  		logging.info('scenario: '+str(scenario))
+
+
+
 		# how to check if there are example rows in the datastore
 		que = db.Query(FinalJudgmentData).filter('usernum =', self.session['usernum']).filter('scenario =', scenario)
 		results = que.fetch(limit=1000)
@@ -532,54 +465,112 @@ class ScenarioHandler(webapp.RequestHandler):
 			if scenario == 0:
 				drugs = [self.session['drugNames'][0], self.session['drugNames'][1]]
 				drugColors = [self.session['drugColors'][0], self.session['drugColors'][1]]
+
+				obj = User.get(self.session['userkey']);
+				obj.progress = 1 
+				obj.put()
 			else:
 				drugs = [self.session['drugNames'][2], self.session['drugNames'][3]]
 				drugColors = [self.session['drugColors'][2], self.session['drugColors'][3]]
+
+
+				obj = User.get(self.session['userkey']);
+				obj.progress = 3
+				obj.put()
 
 			condition = self.session['conditions'][scenario]
 
 			position = self.session['position'][scenario]
 
-			if(condition == 'positive'):
 
-				doRender(self, 'scenario.htm',
-					{'paradigmData':self.session['posParadigmData'],
-					'groupData':self.session['posGroupData'],
-					'drugNames': self.session['drugNames'],
-					'diseaseNames': self.session['diseaseNames'],
-					'condition': condition,
-					'scenario': self.session['scenario'],
-					'drugs': drugs,
-					'drugColors': drugColors,
-					'position':position,
-					'faces': self.session['faces']})
+			if(condition == 'positive'):
+				data = self.session['posParadigmData']
+				group = self.session['posGroupData']
 			else:
-				doRender(self, 'scenario.htm',
-					{'paradigmData':self.session['negParadigmData'],
-					'groupData':self.session['negGroupData'],
-					'drugNames': self.session['drugNames'],
-					'diseaseNames': self.session['diseaseNames'],
-					'condition': condition,
-					'scenario': self.session['scenario'],
-					'drugs': drugs,
-					'drugColors': drugColors,
-					'position':position,
-					'faces': self.session['faces']})
+				data = self.session['negParadigmData']
+				group = self.session['negGroupData']
+
+			doRender(self, 'scenario.htm',
+				{'paradigmData':data,
+				'groupData':group,
+				'drugNames': self.session['drugNames'],
+				'diseaseNames': self.session['diseaseNames'],
+				'condition': condition,
+				'scenario': self.session['scenario'],
+				'drugs': drugs,
+				'drugColors': drugColors,
+				'position':position,
+				'faces': self.session['faces'],
+				'trialNumber': self.session['trialNumber'],
+				'reloads': self.session['reloads']})
+			
 
 		except KeyError:
 			doRender(self, 'mturkid.htm',
 				{'error':1})
 
 
-				
+	def post(self):
+		self.session = get_current_session()
+
+		scenario = self.session['scenario']
+		# scenario = 0 # testing
+
+		condition = self.session['conditions'][scenario]
+
+
+		if scenario == 0:
+			drugs = [self.session['drugNames'][0], self.session['drugNames'][1]]
+			drugColors = [self.session['drugColors'][0], self.session['drugColors'][1]]
+		else:
+			drugs = [self.session['drugNames'][2], self.session['drugNames'][3]]
+			drugColors = [self.session['drugColors'][2], self.session['drugColors'][3]]
+
+		position = self.session['position'][scenario]
+
+		# self.session['testOrder'] = 1 # testing
+
+		logging.info('TEST ORDER: '+str(self.session['testOrder']))
+
+
+			
+		doRender(self, 'mJudgment.htm',
+			{'drugNames': self.session['drugNames'],
+			'diseaseNames': self.session['diseaseNames'],
+			'drugs': drugs,
+			'drugColors': drugColors,
+			'position': position,
+			'testOrder':self.session['testOrder'],
+			'condition':condition,
+			'faces': self.session['faces'],
+			'memOrder':self.session['memOrder']})			
 	
 
+class ProgressCheckHandler(webapp.RequestHandler):
+	def get(self):
+		self.session = get_current_session()
+
+		logging.info('HANDLER IS HANDLING')
+		o = User.get(self.session['userkey']);
+		p = o.progress
+
+		# p = 2
+		if (p == 2) | (p == 4):
+			p = 2
+
+		logging.info('PROGRESS: '+str(p))
+
+		# create json object to send back as "data"
+		data = json.dumps(p)
+
+		# self.response.headers['Content-Type'] = 'application/json; charset=UTF-8'
+		self.response.out.write(data) # this is the function you need!
 	
 
 # first and second judgment refers to the get/post requests, NOT ajax
-class FirstJudgmentHandler(webapp.RequestHandler):
+class FinalJudgmentHandler(webapp.RequestHandler):
 	def get(self):
-		
+		# this one is only used when they load the scenario page but should be on the test page
 		self.session = get_current_session()
 
 		scenario = self.session['scenario']
@@ -600,72 +591,23 @@ class FirstJudgmentHandler(webapp.RequestHandler):
 
 		logging.info('TEST ORDER: '+str(self.session['testOrder']))
 
-		if self.session['testOrder'] == 0:
-			# have to pass a "progress" variable into the page so it knows which handler to post
-			doRender(self, 'mJudgment.htm',
-				{'drugNames': self.session['drugNames'],
-				'diseaseNames': self.session['diseaseNames'],
-				'drugs': drugs,
-				'drugColors': drugColors,
-				'position': position,
-				'testOrder':self.session['testOrder'],
-				'condition':condition,
-				'faces': self.session['faces'],
-				'memOrder':self.session['memOrder']})
-		else:
-			# have to pass a "progress" variable into the page so it knows which handler to post
-			doRender(self, 'cJudgment.htm',
-				{'drugNames': self.session['drugNames'],
-				'diseaseNames': self.session['diseaseNames'],
-				'drugs': drugs,
-				'drugColors': drugColors,
-				'position': position,
-				'testOrder':self.session['testOrder']})
 
-# class CausalJudgmentHandler(webapp.RequestHandler):
-class SecondJudgmentHandler(webapp.RequestHandler):
-	def get(self):
-		self.session = get_current_session()
-
-		scenario = self.session['scenario']
-		# scenario = 0 # testing
-
-		if scenario == 0:
-			drugs = [self.session['drugNames'][0], self.session['drugNames'][1]]
-			drugColors = [self.session['drugColors'][0], self.session['drugColors'][1]]
-		else:
-			drugs = [self.session['drugNames'][2], self.session['drugNames'][3]]
-			drugColors = [self.session['drugColors'][2], self.session['drugColors'][3]]
-
-		position = self.session['position'][scenario]
-		condition = self.session['conditions'][scenario]
-
-		if self.session['testOrder'] == 0:
-			# have to pass a "progress" variable into the page so it knows which handler to post
-			doRender(self, 'cJudgment.htm',
-				{'drugNames': self.session['drugNames'],
-				'diseaseNames': self.session['diseaseNames'],
-				'drugs': drugs,
-				'drugColors': drugColors,
-				'position': position,
-				'testOrder':self.session['testOrder']})
-		else:
-			# have to pass a "progress" variable into the page so it knows which handler to post
-			doRender(self, 'mJudgment.htm',
-				{'drugNames': self.session['drugNames'],
-				'diseaseNames': self.session['diseaseNames'],
-				'drugs': drugs,
-				'drugColors': drugColors,
-				'position': position,
-				'testOrder':self.session['testOrder'],
-				'condition':condition,
-				'faces': self.session['faces'],
-				'memOrder':self.session['memOrder']})
+		doRender(self, 'mJudgment.htm',
+			{'drugNames': self.session['drugNames'],
+			'diseaseNames': self.session['diseaseNames'],
+			'drugs': drugs,
+			'drugColors': drugColors,
+			'position': position,
+			'testOrder':self.session['testOrder'],
+			'condition':condition,
+			'faces': self.session['faces'],
+			'memOrder':self.session['memOrder']})		
 
 	def post(self):
 
 		self.session = get_current_session()
 
+		
 
 		self.session['scenario'] += 1
 		# self.session['scenario'] = 1 # testing
@@ -676,6 +618,13 @@ class SecondJudgmentHandler(webapp.RequestHandler):
 
 		# does it make sense to have multiple scenarios? How long should our datasets be?
 		if scenario<=NumScenarios-1: #have more scenarios to go
+			obj = User.get(self.session['userkey']);
+			obj.progress = 2
+			obj.put()
+
+			self.session['trialNumber'] = 0
+			self.session['reloads']		= 0
+
 			disease = self.session['diseaseNames'][1]
 			drugs = [self.session['drugNames'][2], self.session['drugNames'][3]]
 			
@@ -691,7 +640,52 @@ class SecondJudgmentHandler(webapp.RequestHandler):
 				'position': position})
 		
 		else: 
+			obj = User.get(self.session['userkey']);
+			obj.progress = 4
+			obj.put()
 			doRender(self, 'demographics.htm')
+
+# class CausalJudgmentHandler(webapp.RequestHandler):
+# class SecondJudgmentHandler(webapp.RequestHandler):
+# 	def get(self):
+# 		self.session = get_current_session()
+
+# 		scenario = self.session['scenario']
+# 		# scenario = 0 # testing
+
+# 		if scenario == 0:
+# 			drugs = [self.session['drugNames'][0], self.session['drugNames'][1]]
+# 			drugColors = [self.session['drugColors'][0], self.session['drugColors'][1]]
+# 		else:
+# 			drugs = [self.session['drugNames'][2], self.session['drugNames'][3]]
+# 			drugColors = [self.session['drugColors'][2], self.session['drugColors'][3]]
+
+# 		position = self.session['position'][scenario]
+# 		condition = self.session['conditions'][scenario]
+
+# 		if self.session['testOrder'] == 0:
+# 			# have to pass a "progress" variable into the page so it knows which handler to post
+# 			doRender(self, 'cJudgment.htm',
+# 				{'drugNames': self.session['drugNames'],
+# 				'diseaseNames': self.session['diseaseNames'],
+# 				'drugs': drugs,
+# 				'drugColors': drugColors,
+# 				'position': position,
+# 				'testOrder':self.session['testOrder']})
+# 		else:
+# 			# have to pass a "progress" variable into the page so it knows which handler to post
+# 			doRender(self, 'mJudgment.htm',
+# 				{'drugNames': self.session['drugNames'],
+# 				'diseaseNames': self.session['diseaseNames'],
+# 				'drugs': drugs,
+# 				'drugColors': drugColors,
+# 				'position': position,
+# 				'testOrder':self.session['testOrder'],
+# 				'condition':condition,
+# 				'faces': self.session['faces'],
+# 				'memOrder':self.session['memOrder']})
+
+	
 
 
 
@@ -1081,6 +1075,9 @@ class MturkIDHandler(webapp.RequestHandler):
 		# order of asking (memory vs causal)
 		testOrder = random.choice([0,1])
 
+		if account == 'cjd78@pitt.edu':
+			testOrder = 0
+
 		# within memory, order of asking C|E or E|C
 		# 0 is E|C first
 		memOrder = random.choice([0,1])
@@ -1128,7 +1125,8 @@ class MturkIDHandler(webapp.RequestHandler):
 			age=0,
 			bonusAmt=0,
 			testOrder = testOrder,
-			memOrder = memOrder); 
+			memOrder = memOrder,
+			progress = 0); 
 
 		# dataframe modeling, but I'm not sure what exactly
 		userkey = newuser.put()
@@ -1159,12 +1157,12 @@ class MturkIDHandler(webapp.RequestHandler):
 		self.session['userkey']				= userkey
 		self.session['usernum']				= usernum
 		self.session['memOrder']			= memOrder
+		self.session['trialNumber']			= 0
+		self.session['reloads']				= 0
 		
 		
-		# doRender(self, 'qualify.htm') no need if we're using SONA
+		doRender(self, 'qualify.htm') 
 
-		doRender(self, 'task.htm',
-			{'faces':self.session['faces']})
 
 
 		# If got no response back from http://www.mturk-qualify.appspot.com
@@ -1187,9 +1185,10 @@ application = webapp.WSGIApplication([
 	('/data', DataHandler),
 	('/do_not_qualify', DNQHandler),
 	('/scenario', ScenarioHandler),
-	('/firstJudgment', FirstJudgmentHandler),
-	('/secondJudgment', SecondJudgmentHandler),
+	('/finalJudgment', FinalJudgmentHandler),
+	# ('/secondJudgment', SecondJudgmentHandler),
 	('/qualify', QualifyHandler),
+	('/progressCheck', ProgressCheckHandler),
 	('/demographics', DemographicsHandler),
 	('/mturkid', MturkIDHandler), 
 	('/.*',      MturkIDHandler)],  #default page
