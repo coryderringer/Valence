@@ -5,4 +5,4 @@ The previous version had different pages and accompanying handlers for the scena
 
 The previous version was also not compatible with the use of the "back" button. This version is (hypothetically...) capable of dealing with the back button and the refresh button (by putting participants back where they left off when they get back to the page).
 
-(Python, JS, JQuery)
+(Python, JS, JQuery, NoSQL)
